@@ -20,7 +20,7 @@ $stdin.each_line do |line|
     case op
     when 'd'
       s = [arg].pack('H*').force_encoding(enc)
-      t = s.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "�")
+      t = s.encode(Encoding::UTF_8, invalid: :replace, undef: :replace, replace: "\uFFFD")
       t.empty? ? '-' : t.codepoints.map { |c| format('%04X', c) }.join(' ')
     when 'e'
       s = arg.split(' ').map { |c| c.to_i(16) }.pack('U*')

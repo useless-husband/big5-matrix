@@ -45,6 +45,7 @@ FAMILY_NAMES = {
     "ref.ms-cp950": "Plain Big5: Unicode BIG5.TXT and Microsoft CP950.TXT, no user-defined areas",
     "icu.ibm-950": "IBM-950",
     "java.x-ms950-hkscs": "Microsoft's Big5-HKSCS (MS950_HKSCS)",
+    "java.x-ms950-hkscs-xp": "Code page 951: Microsoft's HKSCS-2001 table as on Windows XP",
 }
 
 

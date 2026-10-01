@@ -33,14 +33,14 @@ with size 2.
 
 ```
 $ go run .
-81 40 -> "�"
-81 5C -> "�"
-A1 7F -> "�"
-A1 30 -> "�0"
+81 40 -> "\ufffd"
+81 5C -> "\ufffd"
+A1 7F -> "\ufffd"
+A1 30 -> "\ufffd0"
 ```
 
-encoding_rs, Chromium and the standard give `"�@"`, `"�\\"`, `"�\x7f"` and
-`"�0"`.
+encoding_rs, Chromium and the standard give `"\ufffd@"`, `"\ufffd\\"`, `"\ufffd\x7f"` and
+`"\ufffd0"`.
 
 ## Note on the opposite risk
 

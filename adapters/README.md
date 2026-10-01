@@ -18,12 +18,13 @@ nothing compiled is committed. How each adapter calls its library, and why:
 | `go/main.go` | x/text `Decoder.Bytes` (always replaces with U+FFFD) | `Encoder.Bytes`, error = unmappable | x/text module version |
 | `node/adapter.mjs` | `new TextDecoder('big5')` (non-fatal); `iconv.decode` | iconv-lite only; it writes `?` for an unmappable character, which the adapter detects (0x3F is never a Big5 trail byte) | Node version; iconv-lite version |
 | `rust/` | `BIG5.decode_without_bom_handling` | `encode_from_utf8_without_replacement` (no HTML character references) | encoding_rs version from `Cargo.lock` |
+| `browser/adapter.mjs` | `new TextDecoder('big5')` in headless Chromium (playwright-core; skipped if no Playwright Chromium is installed) | none | Chromium version |
 | `java/Adapter.java` | `CharsetDecoder` with `REPLACE` (what `new String(bytes, cs)` does) | `CharsetEncoder` with `REPORT` | `java.version` |
-| `dotnet/` | `DecoderReplacementFallback("�")`; `950/default` keeps the default fallbacks | `EncoderFallback.ExceptionFallback`; `950/default` keeps the default best-fit fallback and reports the bytes produced | .NET runtime version |
+| `dotnet/` | `DecoderReplacementFallback("\uFFFD")`; `950/default` keeps the default fallbacks | `EncoderFallback.ExceptionFallback`; `950/default` keeps the default best-fit fallback and reports the bytes produced | .NET runtime version |
 | `php/adapter.php` | `mb_convert_encoding` with `mb_substitute_character(0xFFFD)` | `mb_convert_encoding` with the `long` substitute mode, which the adapter detects | PHP version |
-| `ruby/adapter.rb` | `String#encode(invalid: :replace, undef: :replace, replace: "�")` | `String#encode`, error = unmappable | Ruby version |
+| `ruby/adapter.rb` | `String#encode(invalid: :replace, undef: :replace, replace: "\uFFFD")` | `String#encode`, error = unmappable | Ruby version |
 | `perl/adapter.pl` | `Encode::decode($enc, $bytes, FB_DEFAULT)` | `Encode::encode($enc, $text, FB_CROAK)` | Encode version |
-| `icu/adapter.c` | `ucnv_toUChars` with ICU's default substitute callback (U+FFFD, or U+001A where ICU picks it) and default fallback setting, as `uconv` uses them | `ucnv_fromUChars` with the stop callback | ICU version |
+| `icu/adapter.c` | `ucnv_toUnicode` with ICU's own substitute callback (U+FFFD, or U+001A where ICU picks it) wrapped so that a U+001A written for an error is marked `!001A`; default fallback setting, as `uconv` uses it | `ucnv_fromUChars` with the stop callback | ICU version |
 | `iconv/adapter.c` | `iconv(3)`; stops at the first error (writes `!`) | `iconv(3)`; an error or a non-zero "non-identical conversions" count is `!` | macOS version and build |
 
 Every decode call starts from a fresh decoder state and flushes it at the end of the input, so

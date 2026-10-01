@@ -26,7 +26,7 @@ int codepage = int.Parse(parts[0]);
 bool defaults = parts.Length > 1 && parts[1] == "default";
 Encoding enc = defaults
     ? Encoding.GetEncoding(codepage)
-    : Encoding.GetEncoding(codepage, EncoderFallback.ExceptionFallback, new DecoderReplacementFallback("�"));
+    : Encoding.GetEncoding(codepage, EncoderFallback.ExceptionFallback, new DecoderReplacementFallback("\uFFFD"));
 
 using var stdin = new StreamReader(Console.OpenStandardInput(), new UTF8Encoding(false));
 using var stdout = new StreamWriter(Console.OpenStandardOutput(), new UTF8Encoding(false), 1 << 16);

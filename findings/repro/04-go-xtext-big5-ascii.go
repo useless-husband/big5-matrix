@@ -16,5 +16,5 @@ func main() {
 		s, _, _ := transform.String(traditionalchinese.Big5.NewDecoder(), in)
 		fmt.Printf("% X -> %+q\n", in, s)
 	}
-	// WHATWG (encoding_rs, browsers): 81 40 -> "�@", 81 5C -> "�\\", A1 7F -> "�\x7f", A1 30 -> "�0"
+	// WHATWG (encoding_rs, browsers): 81 40 -> "\ufffd@", 81 5C -> "\ufffd\\", A1 7F -> "\ufffd\x7f", A1 30 -> "\ufffd0"
 }
