@@ -513,6 +513,42 @@ def by_name(m: Model, table) -> dict:
 # ---------------------------------------------------------------------------------------------
 
 
+def facts(m: Model) -> dict:
+    """Specific numbers the report discusses, each computed from the data."""
+    f: dict[str, int] = {}
+    w_enc, g_enc = m.enc["ref.whatwg"], m.enc.get("go.big5", {})
+    if g_enc:
+        f["go.encodes_excluded"] = sum(1 for a in m.eargs if w_enc[a] == ERR and g_enc[a] not in (ERR, EMPTY))
+        f["go.encode_other_choice"] = sum(1 for a in m.eargs if ERR not in (w_enc[a], g_enc[a]) and w_enc[a] != g_enc[a])
+    if "iconv.big5-hkscs" in m.enc:
+        e, d = m.enc["iconv.big5-hkscs"], m.dec["iconv.big5-hkscs"]
+        hanzi = [a for a in m.chars["ref.ms-cp950"] if len(a) == 4 and region(a) in ("hanzi1", "hanzi2")]
+        f["iconv.hkscs.hanzi_total"] = len(hanzi)
+        f["iconv.hkscs.hanzi_unencodable"] = sum(1 for a in hanzi if e.get(m.chars["ref.ms-cp950"][a]) == ERR)
+        n = 0
+        for a, b in e.items():
+            if " " in a or b in (ERR, EMPTY) or len(b) != 4:
+                continue
+            back = d.get(b, "")
+            if is_clean(back) and " " not in back and int(back, 16) >= 0x20000 and int(back, 16) & 0xFFFF == int(a, 16):
+                n += 1
+        f["iconv.hkscs.plane_bits"] = n
+        own = {v for v in m.chars["iconv.big5-hkscs"].values() if " " not in v and int(v, 16) >= 0x20000}
+        f["iconv.hkscs.plane2_decoded"] = len(own)
+        f["iconv.hkscs.plane2_unencodable"] = sum(1 for v in own if e.get(v) == ERR)
+    if "dotnet.950" in m.chars:
+        f["dotnet.rejects_cp950"] = sum(1 for a in m.chars["ref.ms-cp950"] if a not in m.chars["dotnet.950"])
+    if "node.textdecoder" in m.chars:
+        f["node.vs_whatwg"] = char_distance(m, "node.textdecoder", "ref.whatwg")
+        f["node.vs_bestfit"] = char_distance(m, "node.textdecoder", "ref.ms-bestfit950")
+    if "browser.chromium" in m.dec:
+        f["chromium.differs"] = sum(1 for a in m.dargs if m.dec["browser.chromium"][a] != m.dec[WHATWG][a])
+    f["rust.differs"] = sum(1 for a in m.dargs if m.dec["rust.big5"][a] != m.dec[WHATWG][a]) if "rust.big5" in m.dec else -1
+    if "rust.big5" in m.enc:
+        f["rust.encode_differs"] = sum(1 for a in m.eargs if m.enc["rust.big5"][a] != w_enc[a])
+    return f
+
+
 def analyze(m: Model) -> dict:
     dist = distance_matrix(m)
     return {
@@ -530,6 +566,7 @@ def analyze(m: Model) -> dict:
         "fingerprint": fingerprint(m),
         "decode_classes": decode_classes(m),
         "ascii_first_exceptions": ascii_first_exceptions(m),
+        "facts": facts(m),
         "oneway": oneway_encodings(m),
         "encode_choice": encode_choice(m),
         "roundtrips": roundtrips(m),

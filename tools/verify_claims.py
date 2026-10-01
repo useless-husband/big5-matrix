@@ -163,6 +163,11 @@ CLAIMS = [
     Claim("go-swallows-ascii",
           "Go x/text decodes 0x81 0x40 to one U+FFFD (the '@' is consumed); WHATWG keeps the '@'",
           "go", "FFFD", lambda: _go(GO_DECODE % "\\x81\\x40"), lambda: data("go.big5", "d", "8140")),
+    Claim("python-to-go-cyrillic",
+          "Python's 'big5' writes Ё (U+0401) as 0xC7B3, which Go reads as シ (U+30B7)", "go", "C7B3 -> 30B7",
+          lambda: _python("print('\\u0401'.encode('big5').hex().upper())") + " -> "
+          + _go(GO_DECODE % "\\xc7\\xb3").strip(),
+          lambda: data("python.big5", "e", "0401") + " -> " + data("go.big5", "d", "C7B3")),
     Claim("go-swallows-del", "Go x/text decodes 0xA1 0x7F to one U+FFFD (DEL consumed)",
           "go", "FFFD", lambda: _go(GO_DECODE % "\\xa1\\x7f"), lambda: data("go.big5", "d", "A17F")),
     Claim("iconv-hkscs-no-base",

@@ -16,7 +16,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 
 from .analyze import BY_NAME_BIG5, BY_NAME_CP950, ONEWAY_KINDS, TABLE_REFS
-from .model import CODE_REGIONS, DECODE_REGIONS
+from .model import CODE_REGIONS, DECODE_REGIONS, region
 
 REF_SHORT = {
     "ref.whatwg": "WHATWG",
@@ -34,6 +34,9 @@ REGION_SHORT = {
     "hanzi2": "C940–F9D5",
     "f9d6": "F9D6–F9FE",
     "eudc-fa40": "FA40–FEFE",
+    "ascii-first": "two ASCII bytes",
+    "bad-trail": "lead + 80–A0 (IBM's extra trail bytes)",
+    "ascii-after-lead": "lead + ASCII",
 }
 FAMILY_NAMES = {
     # anchor member -> name; a family is named after the first anchor it contains
@@ -267,8 +270,60 @@ def build(A: dict) -> dict:
         N[f"pair.{key}.clean"] = clean
         N[f"pair.{key}.total"] = sum(1 for p in B["pairs"] if p["writer"] != p["reader"])
 
-    # headline: chromium vs whatwg; rust vs whatwg
+    # --- what changes between named pairs ---------------------------------------------------------
+    rows = []
+    for key, w, r in PAIRS_OF_INTEREST:
+        B = A[f"by_name_{key}"]
+        p = next(x for x in B["pairs"] if x["writer"] == w and x["reader"] == r)
+        groups = defaultdict(list)
+        for a, b, back in p.get("rows", []):
+            kind = "error" if "!" in back.split(" ") else "changed"
+            reg = region(b) if len(b) == 4 else ("ASCII byte" if int(b[:2], 16) < 0x80 else "single byte")
+            groups[(REGION_SHORT.get(reg, reg), kind)].append((a, b, back))
+        first = True
+        for (reg, kind), lst in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+            ex = "; ".join(f"{show(a)} → `{b}` → {show_back(back)}" for a, b, back in lst[:3])
+            label = f"{w} → {r} (`{key}`)" if first else ""
+            rows.append([label, f"{reg}: {'reader reports an error' if kind == 'error' else 'silently different text'}",
+                         len(lst), ex])
+            first = False
+    T["pair-examples"] = table(["Writer → reader", "Bytes / outcome", "Characters", "Examples"], rows, "llrl")
+
+    for k, v in A.get("facts", {}).items():
+        N[f"fact.{k}"] = v
+
+    # headline numbers used in the README
+    N["chromium.vs_whatwg"] = A["distance"]["browser.chromium"]["ref.whatwg"] if "browser.chromium" in A["distance"] else 0
+    N["rust.vs_whatwg"] = A["distance"]["rust.big5"]["ref.whatwg"]
     return {"numbers": N, "tables": T}
+
+
+PAIRS_OF_INTEREST = [
+    ("big5", "Python", "Go"),
+    ("big5", "Java", "Node.js"),
+    ("big5", "PHP", ".NET"),
+    ("big5", "Go", "Python"),
+    ("big5", ".NET", "PHP"),
+    ("cp950", "Java", ".NET"),
+]
+
+
+def show(h: str) -> str:
+    """A code point sequence for a table cell: the characters when printable, and their numbers."""
+    cps = [int(x, 16) for x in h.split(" ")]
+    printable = all(0x20 < c < 0x7F or (c >= 0xA1 and not 0xD800 <= c <= 0xF8FF and c not in (0xAD,))
+                    for c in cps)
+    text = "".join(chr(c) for c in cps) if printable else ""
+    text = text.replace("|", "\\|").replace("`", "ˋ")
+    return (text + " " if text else "") + " ".join(f"U+{c:04X}" for c in cps)
+
+
+def show_back(back: str) -> str:
+    toks = back.split(" ")
+    if "!" in toks:
+        rest = [t for t in toks if t != "!"]
+        return "error" + (" + " + show(" ".join(rest)) if rest else "")
+    return show(back)
 
 
 def detail_rows(A: dict) -> dict:
