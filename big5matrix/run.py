@@ -58,7 +58,8 @@ def run_adapter(cmd: list[str], codec: str, op: str, args: list[str]) -> dict[st
 def extras_from_decodes(results: list[dict[str, str]]) -> list[tuple[int, ...]]:
     """Code point sequences produced by some decoder that the base encode cases do not cover:
     the output of a two-byte character that decodes to several code points, and code points
-    outside the base ranges. A two-byte case is a character for a decoder when that decoder
+    outside the base ranges. Output containing a lone surrogate (Chromium produces some) is
+    not text and is left out. A two-byte case is a character for a decoder when that decoder
     does not decode its first byte on its own (the first byte is a lead byte)."""
     found: set[tuple[int, ...]] = set()
     for res in results:
@@ -67,6 +68,8 @@ def extras_from_decodes(results: list[dict[str, str]]) -> list[tuple[int, ...]]:
             if protocol.ERROR in toks or not toks:
                 continue
             cps = tuple(int(t, 16) for t in toks)
+            if any(0xD800 <= c <= 0xDFFF for c in cps):
+                continue  # a lone surrogate is not a Unicode scalar value; nothing can encode it
             if len(arg) == 4 and len(cps) > 1:
                 first = protocol.decode_tokens(res.get(arg[:2], protocol.ERROR))
                 if not first or protocol.ERROR in first:
