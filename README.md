@@ -27,7 +27,7 @@ whole one- and two-byte space and over every BMP and plane-2 character, compares
   all but <!--n:pair.big5.clean-->11<!--/n--> of <!--n:pair.big5.total-->110<!--/n--> pairs. Python writes Ё as `C7 B3`; Go and browsers read シ.
 - `cp950` is Microsoft's table in Python, Perl and Ruby and IBM's in Java and ICU. Node.js's
   `TextDecoder('big5')` is ICU's windows-950, <!--n:fact.node.vs_whatwg-->6,253<!--/n--> byte sequences away from the WHATWG decoder
-  that browsers implement.
+  that Chromium and Firefox's encoding_rs implement.
 - After a stray lead byte, <!--n:error.keep_all-->25<!--/n--> decoders keep the next ASCII byte (as WHATWG requires) and
   <!--n:error.swallow_all-->6<!--/n--> swallow it, quote marks included. Perl drops a truncated final character silently.
 - macOS iconv's Big5 encoders turn <!--n:oneway.iconv.big5.to-ascii-->199<!--/n--> non-ASCII characters into ASCII without an error
@@ -53,8 +53,9 @@ Write with the runtime on the left, read with the one on the top, both asking fo
 | **macOS iconv** | 864 / 6,006 | 5,892 / 1,161 | 911 / 2 | 5,892 / 1,161 | 865 / 6,008 | 909 / 8 | 863 / 5,977 | 892 / 5,830 | 1,154 / 5,830 | 911 / 2 | 959 / 2 |
 <!--/t-->
 
-The [report](docs/divergences.md) explains each number; every number in this README and the
-report is generated from the committed data (`python3 -m big5matrix report`).
+The [report](docs/divergences.md) explains each number. Every result quoted in this README and
+in the report is generated from the committed data (`python3 -m big5matrix report`); the
+timings below are measured separately, as described there.
 
 ## Try it
 

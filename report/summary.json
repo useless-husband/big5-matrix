@@ -56,6 +56,7 @@
   "fact.iconv.hkscs.plane2_decoded": 1713,
   "fact.iconv.hkscs.plane2_unencodable": 1708,
   "fact.iconv.hkscs.plane_bits": 1554,
+  "fact.icu.dropped": 66,
   "fact.node.vs_bestfit": 0,
   "fact.node.vs_whatwg": 6253,
   "fact.rust.differs": 0,

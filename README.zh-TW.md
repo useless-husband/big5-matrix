@@ -23,7 +23,7 @@
 - 用一個執行環境的「big5」寫、用另一個的「big5」讀：<!--n:pair.big5.total-->110<!--/n--> 組寫讀組合中只有 <!--n:pair.big5.clean-->11<!--/n--> 組完全不掉字。
   例如 Python 把 Ё 寫成 `C7 B3`，Go 和瀏覽器讀成シ。
 - `cp950` 在 Python、Perl、Ruby 是微軟的表，在 Java 和 ICU 卻是 IBM 的表。Node.js 的
-  `TextDecoder('big5')` 其實是 ICU 的 windows-950，跟瀏覽器實作的 WHATWG 解碼器差了 <!--n:fact.node.vs_whatwg-->6,253<!--/n--> 個位元組序列。
+  `TextDecoder('big5')` 其實是 ICU 的 windows-950，跟 Chromium 與 Firefox 的 encoding_rs 所實作的 WHATWG 解碼器差了 <!--n:fact.node.vs_whatwg-->6,253<!--/n--> 個位元組序列。
 - 遇到孤立的前導位元組時，<!--n:error.keep_all-->25<!--/n--> 個解碼器會保留下一個 ASCII 位元組（WHATWG 的規定），
   <!--n:error.swallow_all-->6<!--/n--> 個會把它一起吃掉，引號也不例外。Perl 會默默丟掉被截斷的最後一個字。
 - macOS iconv 的 Big5 編碼器會把 <!--n:oneway.iconv.big5.to-ascii-->199<!--/n--> 個非 ASCII 字元默默換成 ASCII
@@ -48,8 +48,8 @@
 | **macOS iconv** | 864 / 6,006 | 5,892 / 1,161 | 911 / 2 | 5,892 / 1,161 | 865 / 6,008 | 909 / 8 | 863 / 5,977 | 892 / 5,830 | 1,154 / 5,830 | 911 / 2 | 959 / 2 |
 <!--/t-->
 
-每個數字的意義請見[報告](docs/divergences.md)；本說明與報告裡的數字都是從已提交的資料產生的
-（`python3 -m big5matrix report`）。
+每個數字的意義請見[報告](docs/divergences.md)。本說明與報告引用的結果數字都是從已提交的資料產生的
+（`python3 -m big5matrix report`）；下面的執行時間則是另外實測的。
 
 ## 試試看
 

@@ -24,8 +24,8 @@ other work; nothing here is timing-sensitive). The site at
   of different families in at least <!--n:families.min_between-->655<!--/n-->.
 - The name tells you little. `cp950` is Microsoft's table in Python, Perl and Ruby but IBM's
   in Java and ICU. Node.js's `TextDecoder('big5')` is not the WHATWG decoder it is documented
-  as (it is ICU's `windows-950`, <!--n:fact.node.vs_whatwg-->6,253<!--/n--> byte sequences different from WHATWG); the
-  browser's is.
+  as (it is ICU's `windows-950`, <!--n:fact.node.vs_whatwg-->6,253<!--/n--> byte sequences different from WHATWG);
+  Chromium's is.
 - Writing text as "big5" in one runtime and reading it as "big5" in another loses or changes
   characters in all but <!--n:pair.big5.clean-->11<!--/n--> of the <!--n:pair.big5.total-->110<!--/n--> ordered pairs of
   runtimes tested. Example: Python writes Ё as `C7 B3`, which Go and browsers read as シ.
@@ -223,10 +223,10 @@ decodes nothing there.
 
 What stands out:
 
-- **Plain Big5 is still the default in several runtimes.** Python's `big5`, Java's `Big5`,
-  PHP's `BIG-5` and Perl's `big5` (an alias of `big5-eten`) are within a few dozen byte
-  sequences of BIG5.TXT or CP950.TXT and reject the user-defined rows. Python's, Java's and
-  PHP's take BIG5.TXT's layout for 0xC6A1–0xC7FC.
+- **Plain Big5 is still the default in several runtimes.** Python's `big5`, Java's `Big5` and
+  PHP's `BIG-5` are within a few dozen byte sequences of BIG5.TXT, including its layout of
+  0xC6A1–0xC7FC, and reject the user-defined rows. Perl's `big5` (an alias of `big5-eten`) is
+  CP950.TXT plus ETEN's row 0xC6A1–0xC8FE, also without the user-defined rows.
 - **`cp950` means two different things.** Python's `cp950`, Perl's `cp950`, Ruby's `CP950` and
   PHP's `CP950` are Microsoft's table (Python's without the user-defined areas). In Java and
   ICU the name `cp950` resolves to IBM-950 (`x-IBM950`, `ibm-950_P110-1999`), which differs
@@ -238,10 +238,11 @@ What stands out:
   0x80 and 0xFF as characters. Chromium and encoding_rs implement the WHATWG decoder.
 - **Hong Kong data has no single answer.** The HKSCS columns spread over several families
   depending on the edition they follow and on whether they use Private Use code points:
-  Python's `big5hkscs`, Java's `Big5-HKSCS` and Ruby's `Big5-HKSCS` follow the Unicode
-  mappings; Java's and macOS's MS950-style converters, Ruby's `CP951` and ICU's `ibm-1375`
-  keep Private Use mappings for characters Microsoft's tables had; Perl's `big5-hkscs` and
-  ICU's `ibm-5471` keep many more.
+  Python's `big5hkscs`, Java's `Big5-HKSCS` and Ruby's `Big5-HKSCS` map every HKSCS character
+  in 0x8140–0xA0FE to a Unicode character, while Java's and macOS's MS950-style converters,
+  Ruby's `CP951`, Perl's `big5-hkscs` and ICU's `ibm-1375` and `ibm-5471` map hundreds to
+  thousands of them to Private Use code points instead (the 0x8140–0xA0FE column above gives
+  the count for each).
 
 ## 5. Malformed input
 
@@ -385,7 +386,8 @@ Of the 408 symbol positions, <!--n:symbols.disputed-->28<!--/n--> are decoded di
 
 These are the classic disputes. 0xA145 is HYPHENATION POINT (U+2027) in Microsoft's table and
 BULLET (U+2022) in BIG5.TXT; 0xA14E, 0xA1C2, 0xA1E3, 0xA1F2, 0xA1F3, 0xA241, 0xA242 and the
-three currency signs at 0xA244–0xA247 split the same way (fullwidth or not). BIG5.TXT leaves
+three currency signs at 0xA244–0xA247 split the same way, between Microsoft's choice and
+BIG5.TXT's (for the currency signs: fullwidth ￠ ￡ ￥ or plain ¢ £ ¥). BIG5.TXT leaves
 0xA15A, 0xA1C3, 0xA1C5, 0xA1FE, 0xA240, 0xA2CC and 0xA2CE unmapped because they duplicate
 other codes or had no Unicode equivalent; Java fills three of them instead (0xA15A with
 U+FF3F, 0xA1FE and 0xA240 with box-drawing diagonals). 0xA2CC and 0xA2CE are the Hangzhou numerals ten and thirty in some tables
@@ -471,9 +473,9 @@ decoded differently by at least one column.
 not all pick the same: <!--n:encode.choice-->6,651<!--/n--> code points are encoded by at least two encoders to
 different bytes. Most are HKSCS characters and Private Use code points. Among the classic
 duplicates, ═ ╞ ╪ ╡ (U+2550, U+255E, U+256A, U+2561) go to row 0xF9 in some encoders and to
-0xA2A4–0xA2A7 in others; 十 and 卅 go to 0xA451 and 0xA4CA almost everywhere. (WHATWG specifies
-the last of the duplicate codes for exactly these six characters so that the result is
-readable by plain Big5 decoders.)
+0xA2A4–0xA2A7 in others; 十 and 卅 go to 0xA451 and 0xA4CA almost everywhere. (For exactly these
+six characters the WHATWG encoder specifies the last of the duplicate codes rather than the
+first.)
 
 **One-way mappings** are characters that an encoder writes as bytes its own decoder reads as
 something else:
@@ -517,8 +519,9 @@ something else:
 - **Private Use input.** The HKSCS encoders accept the Private Use code points that older HKSCS
   editions used and write the current Big5 code, whose decode is the proper Unicode character.
   That is deliberate compatibility.
-- **ICU drops some characters.** ICU's converters encode U+00AD and other default-ignorable
-  characters to nothing, without an error, under the default settings `uconv` also uses.
+- **ICU drops some characters.** ICU's converters encode <!--n:fact.icu.dropped-->66<!--/n--> code points, all of them
+  default-ignorable (U+00AD SOFT HYPHEN, U+034F, U+180B–U+180F, U+FFF0–U+FFF8 and others), to
+  nothing, without an error, under the default settings `uconv` also uses.
 
 ## 8. Round trips
 
@@ -730,9 +733,9 @@ them upstream; two were already known.
 ## 10. Recommendations
 
 - **Decide which Big5 you mean, and name the converter, not the label.** For text from the web
-  or from browsers, use a WHATWG implementation (encoding_rs, Go's x/text for decoding, a
-  browser). For data written by Windows programs, use Microsoft's table (`ms950` or
-  `x-windows-950` in Java, `windows-950` in ICU, `cp950` in Python, Perl and Ruby; never
+  or from browsers, use a WHATWG implementation (encoding_rs, a browser, or Go's x/text, which
+  decodes the same characters but see finding 4). For data written by Windows programs, use
+  Microsoft's table (`ms950` or `x-windows-950` in Java, `windows-950` in ICU, `cp950` in Python, Perl and Ruby; never
   `cp950` in Java or ICU). For Hong Kong data, use an HKSCS converter that maps to Unicode code
   points (Python's `big5hkscs`, Java's `Big5-HKSCS`, WHATWG).
 - **Read and write with the same implementation**, or check the pair against the tables above.
@@ -759,8 +762,9 @@ them upstream; two were already known.
   page 950 (which differs from it in <!--n:fact.dotnet.rejects_cp950-->10<!--/n--> byte sequences) is the closest real
   Microsoft converter here.
 - glibc iconv and GNU libiconv, the converters most Linux programs use, were not available on
-  the machine that produced the data. The macOS iconv tested is the FreeBSD-derived one Apple
-  has shipped since macOS 14.
+  the machine that produced the data. The macOS iconv tested is the FreeBSD-derived "Citrus"
+  implementation (its manual page says so), which Apple adopted in macOS 14 according to the
+  reports linked in finding 1.
 - Ruby and Perl are the system versions on macOS (Ruby 2.6.10, Perl 5.34.1 with Encode 3.08),
   both old.
 - Every surprising claim here is checked a second way by
