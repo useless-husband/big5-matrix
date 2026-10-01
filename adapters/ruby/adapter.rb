@@ -1,6 +1,6 @@
 # frozen_string_literal: false
 # Adapter for the transcoders built into Ruby. See big5matrix/protocol.py.
-# Codecs: Big5, CP950, Big5-HKSCS (alias Big5-HKSCS:2008), Big5-UAO.
+# Codecs: Big5, CP950, CP951, Big5-HKSCS (alias Big5-HKSCS:2008), Big5-UAO.
 
 if ARGV.length != 1
   warn 'usage: adapter.rb --version | adapter.rb <encoding>'

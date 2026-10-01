@@ -767,6 +767,24 @@
     "sha256": "685ec49cfb8f549db9ced4abb103b8b3aa7fa3c9906c0f4d1c0a8e61e7335823"
    }
   },
+  "ruby.cp951": {
+   "label": "Ruby CP951",
+   "runtime": "ruby",
+   "codec": "CP951",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Ruby 2.6.10p210 (universal.arm64e-darwin26)",
+   "key": "2.6.10",
+   "decode": {
+    "cases": 65792,
+    "sha256": "237c6df3d6449b47f02def36ddb0940f59d675cb8c702bb9b119bc398eba96a4"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "cf163cae5de4c387ac85fe9d778adbb33d9ced047c3bc6be0e33296427db8a31"
+   }
+  },
   "rust.big5": {
    "label": "Rust encoding_rs BIG5",
    "runtime": "rust",
