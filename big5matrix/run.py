@@ -57,7 +57,9 @@ def run_adapter(cmd: list[str], codec: str, op: str, args: list[str]) -> dict[st
 
 def extras_from_decodes(results: list[dict[str, str]]) -> list[tuple[int, ...]]:
     """Code point sequences produced by some decoder that the base encode cases do not cover:
-    multi-code-point outputs of a single two-byte sequence, and code points outside the base ranges."""
+    the output of a two-byte character that decodes to several code points, and code points
+    outside the base ranges. A two-byte case is a character for a decoder when that decoder
+    does not decode its first byte on its own (the first byte is a lead byte)."""
     found: set[tuple[int, ...]] = set()
     for res in results:
         for arg, r in res.items():
@@ -65,8 +67,10 @@ def extras_from_decodes(results: list[dict[str, str]]) -> list[tuple[int, ...]]:
             if protocol.ERROR in toks or not toks:
                 continue
             cps = tuple(int(t, 16) for t in toks)
-            if len(arg) == 4 and bytes.fromhex(arg)[0] >= 0x80 and len(cps) > 1:
-                found.add(cps)
+            if len(arg) == 4 and len(cps) > 1:
+                first = protocol.decode_tokens(res.get(arg[:2], protocol.ERROR))
+                if not first or protocol.ERROR in first:
+                    found.add(cps)
             for c in cps:
                 if not (c < 0x10000 or 0x20000 <= c < 0x30000):
                     found.add((c,))

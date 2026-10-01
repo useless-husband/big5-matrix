@@ -47,9 +47,10 @@ def _impls() -> list[Impl]:
               "x-Big5-HKSCS-2001", "x-MS950-HKSCS", "x-MS950-HKSCS-XP"):
         add("java", c, f"Java {c}")
     add("dotnet", "950", ".NET code page 950 (strict)")
-    add("dotnet", "950/default", ".NET code page 950 (default fallbacks)", slug="950-default",
-        note="Encoding.GetEncoding(950) as configured by default: best-fit encoding, '?' on "
-             "decoding errors. Encode results are the bytes produced, so '3F' can mean a lost character.")
+    add("dotnet", "950/default", ".NET code page 950 (default fallbacks)", slug="950-default", ops="e",
+        note="Encoding.GetEncoding(950) as configured by default, encoding only: best-fit mappings, "
+             "and '?' (3F) for a character with no mapping at all. Its decoder differs from the strict "
+             "column only in writing '?' instead of U+FFFD.")
     add("php", "BIG-5", "PHP mbstring BIG-5")
     add("php", "CP950", "PHP mbstring CP950")
     for c in ("Big5", "CP950", "Big5-HKSCS", "Big5-HKSCS:2008", "Big5-UAO"):
