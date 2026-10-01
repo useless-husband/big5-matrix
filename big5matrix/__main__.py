@@ -11,7 +11,7 @@
   list             list the implementations
   build            build every adapter whose runtime is installed and print its version
   show INPUT       what every implementation does with a byte sequence (hex, e.g. A145)
-                   or a character (U+2027, or the character itself)
+                   or a character (U+2027, or the character itself); --all: one per line
   dump IMPL OP     print one result file with its inputs (OP is decode or encode)
 """
 
@@ -46,7 +46,8 @@ def main(argv: list[str]) -> int:
     if cmd == "show":
         from .show import show
 
-        return show(rest[0])
+        args = [a for a in rest if a != "--all"]
+        return show(" ".join(args), every="--all" in rest)
     if cmd == "dump":
         from . import store
 
