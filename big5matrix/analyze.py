@@ -14,6 +14,7 @@ blocks and the site are generated. Terms used throughout:
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -178,18 +179,27 @@ def repertoire(m: Model) -> dict:
     return out
 
 
+def _digest(parts) -> str:
+    h = hashlib.sha256()
+    for p in parts:
+        h.update(str(p).encode())
+        h.update(b"\n")
+    return h.hexdigest()
+
+
 def identical_groups(m: Model) -> dict:
+    """Implementations whose results are identical (compared by SHA-256 of the full content)."""
     def groups(items):
         by = defaultdict(list)
         for k, v in items:
             by[v].append(k)
         return [g for g in by.values() if len(g) > 1]
 
-    dec_full = groups((i, hash(tuple(m.dec[i].get(a) for a in m.dargs))) for i in m.decoders()
+    dec_full = groups((i, _digest(m.dec[i].get(a) for a in m.dargs)) for i in m.decoders()
                       if m.scope(i) is None)
-    dec_chars = groups((i, hash(tuple(sorted(m.chars[i].items())))) for i in m.decoders()
+    dec_chars = groups((i, _digest(f"{k}={v}" for k, v in sorted(m.chars[i].items()))) for i in m.decoders()
                        if m.scope(i) is None)
-    enc_full = groups((i, hash(tuple(m.enc[i][a] for a in m.eargs))) for i in m.encoders())
+    enc_full = groups((i, _digest(m.enc[i][a] for a in m.eargs)) for i in m.encoders())
     return {"decode": dec_full, "decode_characters": dec_chars, "encode": enc_full}
 
 
@@ -543,6 +553,8 @@ def facts(m: Model) -> dict:
         f["node.vs_bestfit"] = char_distance(m, "node.textdecoder", "ref.ms-bestfit950")
     if "browser.chromium" in m.dec:
         f["chromium.differs"] = sum(1 for a in m.dargs if m.dec["browser.chromium"][a] != m.dec[WHATWG][a])
+    if "icu.windows-950-2000" in m.enc:
+        f["icu.dropped"] = sum(1 for a in m.eargs if m.enc["icu.windows-950-2000"][a] == EMPTY)
     f["rust.differs"] = sum(1 for a in m.dargs if m.dec["rust.big5"][a] != m.dec[WHATWG][a]) if "rust.big5" in m.dec else -1
     if "rust.big5" in m.enc:
         f["rust.encode_differs"] = sum(1 for a in m.eargs if m.enc["rust.big5"][a] != w_enc[a])

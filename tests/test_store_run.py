@@ -115,3 +115,45 @@ class ExtrasTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RunnerTest(unittest.TestCase):
+    def test_an_adapter_is_built_once_even_when_asked_concurrently(self):
+        import threading
+        import time
+        from unittest import mock
+
+        from big5matrix import run
+
+        calls = []
+
+        def slow_prepare(runtime):
+            calls.append(runtime)
+            time.sleep(0.05)
+            return ["true"]
+
+        runner = run.Runner(Path(tempfile.mkdtemp()), log=lambda s: None)
+        with mock.patch.object(run, "prepare", side_effect=slow_prepare):
+            threads = [threading.Thread(target=runner.command, args=("go",)) for _ in range(8)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+        self.assertEqual(calls, ["go"])
+
+    def test_tolerant_runs_record_adapter_failures(self):
+        from unittest import mock
+
+        from big5matrix import run
+        from big5matrix.registry import BY_ID
+
+        tmp = Path(tempfile.mkdtemp())
+        runner = run.Runner(tmp, log=lambda s: None)
+        impl = BY_ID["python.big5"]
+        with mock.patch.object(run.Runner, "version", return_value={"version": "v", "key": "k"}), \
+                mock.patch.object(run.Runner, "results", side_effect=UnicodeDecodeError("ascii", b"\xff", 0, 1, "x")):
+            entries = runner.run_op([impl], "d", ["41"], tolerate=True)
+            self.assertIn("error", entries["python.big5"])
+            with self.assertRaises(UnicodeDecodeError):
+                runner.run_op([impl], "d", ["41"])
+        shutil.rmtree(tmp)

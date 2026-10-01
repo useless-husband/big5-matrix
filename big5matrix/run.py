@@ -7,6 +7,7 @@ import hashlib
 import platform
 import subprocess
 import tempfile
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -86,13 +87,15 @@ class Runner:
         self.log = log
         self.workers = workers
         self._cmds: dict[str, list[str] | Unavailable] = {}
+        self._lock = threading.Lock()
 
     def command(self, runtime: str) -> list[str]:
-        if runtime not in self._cmds:
-            try:
-                self._cmds[runtime] = prepare(runtime)
-            except Unavailable as e:
-                self._cmds[runtime] = e
+        with self._lock:  # never build one adapter twice at the same time
+            if runtime not in self._cmds:
+                try:
+                    self._cmds[runtime] = prepare(runtime)
+                except Unavailable as e:
+                    self._cmds[runtime] = e
         c = self._cmds[runtime]
         if isinstance(c, Unavailable):
             raise c
@@ -132,7 +135,7 @@ class Runner:
         def one(impl: Impl):
             try:
                 return attempt(impl)
-            except (AdapterError, protocol.ProtocolError, Unavailable, OSError, subprocess.SubprocessError) as e:
+            except (AdapterError, ValueError, Unavailable, OSError, subprocess.SubprocessError) as e:
                 if not tolerate:
                     raise
                 return impl.id, None, {"error": str(e)[-300:]}

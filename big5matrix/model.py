@@ -102,12 +102,6 @@ def region(arg: str) -> str:
     return "eudc-fa40"
 
 
-def ascii_trail_unmapped_region(arg: str, nresult: str) -> str:
-    """Valid-trail pairs whose trail is ASCII (0x40-0x7E) and that an implementation rejects
-    raise the same question as other ASCII bytes after a lead: is the ASCII byte kept?"""
-    return region(arg)
-
-
 # ---------------------------------------------------------------------------------------------
 
 

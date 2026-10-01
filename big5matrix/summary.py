@@ -84,7 +84,7 @@ def family_name(fam: list[str]) -> str:
     return "(single implementation)" if len(fam) == 1 else "(unnamed)"
 
 
-def region_verdict(row: dict, chars_total: int) -> str:
+def region_verdict(row: dict) -> str:
     """Describe an implementation's character map in one region relative to the tables."""
     e = row
     if e["chars"] == 0:
@@ -148,7 +148,7 @@ def build(A: dict) -> dict:
             continue
         nearest = min((r for r in TABLE_REFS if r != i and r != "ref.hkscs-2016"), key=lambda r: D[i][r])
         rows.append([f"`{i}`", fam.get(i, "–"), f"{REF_SHORT[nearest]} ({D[i][nearest]})"]
-                    + [region_verdict(F[i][r], 0) for r in CODE_REGIONS])
+                    + [region_verdict(F[i][r]) for r in CODE_REGIONS])
     T["variants"] = table(["Column", "Family", "Nearest table (differences)"] + [REGION_SHORT[r] for r in CODE_REGIONS],
                           rows)
 
@@ -156,7 +156,7 @@ def build(A: dict) -> dict:
     E = A["error_handling"]
     rows = []
 
-    def share(d: dict, key: str) -> str:
+    def share(d: dict) -> str:
         tot = sum(d.values())
         if not tot:
             return "none (all are characters)"
@@ -167,8 +167,8 @@ def build(A: dict) -> dict:
         return ", ".join(parts)
 
     for i, e in E.items():
-        rows.append([f"`{i}`", e["substitute"], share(e["ascii_nontrail"], ""), share(e["ascii_unmapped"], ""),
-                     share(e["bad_trail"], ""), share(e["lone_lead"], ""),
+        rows.append([f"`{i}`", e["substitute"], share(e["ascii_nontrail"]), share(e["ascii_unmapped"]),
+                     share(e["bad_trail"]), share(e["lone_lead"]),
                      f"{cp(e['byte_80'])} / {cp(e['byte_ff'])}"])
     T["error-handling"] = table(
         ["Decoder", "Error marker", "Lead + ASCII 00–3F/7F", "Lead + unmapped ASCII 40–7E",

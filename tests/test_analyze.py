@@ -118,3 +118,15 @@ class EncodingTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class IdenticalGroupsTest(unittest.TestCase):
+    def test_groups_by_content(self):
+        same = {"A1": "FFFD", "A140": "3000"}
+        m = model({"a.x": dict(same), "b.x": dict(same), "c.x": {"A1": "FFFD", "A140": "3001"}},
+                  {"a.x": {"3000": "A140"}, "b.x": {"3000": "A140"}, "c.x": {"3000": "!"}})
+        m.scope = lambda i: None
+        g = analyze.identical_groups(m)
+        self.assertEqual(g["decode"], [["a.x", "b.x"]])
+        self.assertEqual(g["decode_characters"], [["a.x", "b.x"]])
+        self.assertEqual(g["encode"], [["a.x", "b.x"]])
