@@ -14,7 +14,8 @@ from pathlib import Path
 from .registry import ROOT
 
 SUMMARY = ROOT / "report" / "summary.json"
-DOCUMENTS = [ROOT / "docs" / "divergences.md", ROOT / "docs" / "DESIGN.md", ROOT / "README.md", ROOT / "README.zh-TW.md"]
+DOCUMENTS = [ROOT / "docs" / "divergences.md", ROOT / "docs" / "DESIGN.md", ROOT / "docs" / "導讀.zh-TW.md",
+             ROOT / "README.md", ROOT / "README.zh-TW.md"]
 
 # A key never spans lines or contains '<' or '>'; a number never spans lines or contains '<'.
 NUM = re.compile(r"<!--n:([^<>\n]+?)-->([^<\n]*)<!--/n-->")
