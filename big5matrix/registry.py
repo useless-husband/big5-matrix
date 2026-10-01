@@ -53,7 +53,8 @@ def _impls() -> list[Impl]:
              "column only in writing '?' instead of U+FFFD.")
     add("php", "BIG-5", "PHP mbstring BIG-5")
     add("php", "CP950", "PHP mbstring CP950")
-    for c in ("Big5", "CP950", "Big5-HKSCS", "Big5-HKSCS:2008", "Big5-UAO"):
+    # Ruby's "Big5-HKSCS:2008" is an alias of Big5-HKSCS, so it is not listed separately.
+    for c in ("Big5", "CP950", "Big5-HKSCS", "Big5-UAO"):
         add("ruby", c, f"Ruby {c}")
     for c in ("big5-eten", "cp950", "big5-hkscs"):
         add("perl", c, f"Perl Encode {c}")

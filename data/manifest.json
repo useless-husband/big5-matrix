@@ -716,24 +716,6 @@
     "sha256": "04240bab5225681c900ea2806c5033e4ddd662e41cf80bd4a5b8c2d66ec03f28"
    }
   },
-  "ruby.big5-hkscs-2008": {
-   "label": "Ruby Big5-HKSCS:2008",
-   "runtime": "ruby",
-   "codec": "Big5-HKSCS:2008",
-   "kind": "run",
-   "error_model": "replace",
-   "ops": "de",
-   "version": "Ruby 2.6.10p210 (universal.arm64e-darwin26)",
-   "key": "2.6.10",
-   "decode": {
-    "cases": 65792,
-    "sha256": "7b07fa25a41cac88f41fd79724c77638c278baaa09ffa9edbb0cabafde5a9b7e"
-   },
-   "encode": {
-    "cases": 129028,
-    "sha256": "04240bab5225681c900ea2806c5033e4ddd662e41cf80bd4a5b8c2d66ec03f28"
-   }
-  },
   "ruby.big5-uao": {
    "label": "Ruby Big5-UAO",
    "runtime": "ruby",
