@@ -266,6 +266,28 @@ def fingerprint(m: Model) -> dict:
     return out
 
 
+def ascii_first_exceptions(m: Model) -> dict[str, int]:
+    """For every whole-space decoder, the number of pairs whose first byte is ASCII that do not
+    decode as the first byte followed by the second byte on its own (strict decoders: as the
+    first byte, then the second byte's result). 0 means an ASCII byte never changes how the next
+    byte is read, so those 32,768 cases add nothing beyond the single-byte cases."""
+    out = {}
+    for i in m.decoders():
+        if m.scope(i) is not None:
+            continue
+        d = m.dec[i]
+        bad = 0
+        for x in range(0x80):
+            first = d[f"{x:02X}"]
+            for y in range(0x100):
+                second = d[f"{y:02X}"]
+                exp = " ".join(t for t in (first, second) if t != EMPTY) or EMPTY
+                if d[f"{x:02X}{y:02X}"] != exp:
+                    bad += 1
+        out[i] = bad
+    return out
+
+
 # ---------------------------------------------------------------------------------------------
 # Divergence classes
 
@@ -507,6 +529,7 @@ def analyze(m: Model) -> dict:
         "families": families(m, dist),
         "fingerprint": fingerprint(m),
         "decode_classes": decode_classes(m),
+        "ascii_first_exceptions": ascii_first_exceptions(m),
         "oneway": oneway_encodings(m),
         "encode_choice": encode_choice(m),
         "roundtrips": roundtrips(m),
@@ -522,8 +545,15 @@ def write(result: dict, path: Path | None = None) -> Path:
     return path
 
 
-def main() -> None:
+def main() -> dict:
+    from . import summary
+
     m = Model.load()
     res = analyze(m)
     p = write(res, ROOT / "build" / "analysis.json")
     print(f"wrote {p.relative_to(ROOT)}")
+    s = summary.build(res)
+    REPORT.mkdir(exist_ok=True)
+    (REPORT / "summary.json").write_text(json.dumps(s, indent=1, ensure_ascii=False, sort_keys=True) + "\n")
+    print("wrote report/summary.json")
+    return res
