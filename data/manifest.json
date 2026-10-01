@@ -1,0 +1,796 @@
+{
+ "cases": {
+  "decode": {
+   "count": 65792,
+   "sha256": "89e76ee112a094501913ea2ef30aa6de715c2a4d865e5f50f5c30fe75cb5573a"
+  },
+  "encode": {
+   "count": 129028,
+   "sha256": "69cb6b2ddb71c231ae59d82717f9053ca6f06631630cdf53c162415d533da91c"
+  }
+ },
+ "impls": {
+  "dotnet.950": {
+   "label": ".NET code page 950 (strict)",
+   "runtime": "dotnet",
+   "codec": "950",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": ".NET 10.0.12 (System.Text.Encoding.CodePages 10.0.0.0)",
+   "key": "10.0.12",
+   "decode": {
+    "cases": 65792,
+    "sha256": "181179ca2f2ffe14a3402b5238c698be7bd1c4a37f8b8330888e309108d13f97"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "04b0da0351db16a07d0ade691f75242b4c7ebf3ce2d868d1941f28fef6f98044"
+   }
+  },
+  "dotnet.950-default": {
+   "label": ".NET code page 950 (default fallbacks)",
+   "runtime": "dotnet",
+   "codec": "950/default",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "e",
+   "note": "Encoding.GetEncoding(950) as configured by default, encoding only: best-fit mappings, and '?' (3F) for a character with no mapping at all. Its decoder differs from the strict column only in writing '?' instead of U+FFFD.",
+   "version": ".NET 10.0.12 (System.Text.Encoding.CodePages 10.0.0.0)",
+   "key": "10.0.12",
+   "encode": {
+    "cases": 129028,
+    "sha256": "3330d3a160421279cf799bd01352b432583fd8132c36865c96f191090727179f"
+   }
+  },
+  "go.big5": {
+   "label": "Go x/text traditionalchinese.Big5",
+   "runtime": "go",
+   "codec": "big5",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "golang.org/x/text v0.42.0 (go1.27.1)",
+   "key": "v0.42.0",
+   "decode": {
+    "cases": 65792,
+    "sha256": "c2e7456dd2f330a8265406bd14a4c0f92ddd0286adf0267166644f13d5998021"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "2fd1f218b09e1fd87c2ab8aade68effb181600a7aae3c724be96f77a2f25ab04"
+   }
+  },
+  "iconv.big5": {
+   "label": "macOS iconv BIG5",
+   "runtime": "iconv",
+   "codec": "BIG5",
+   "kind": "run",
+   "error_model": "strict",
+   "ops": "de",
+   "version": "macOS 27.0 (26A428) libiconv (Citrus)",
+   "key": "macos-27.0-26A428",
+   "decode": {
+    "cases": 65792,
+    "sha256": "56eaca6d3652532cd3dff2424e0b8a44e87f5ba1252b54bb20c175a92ddb2171"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "b966bba092447e34f009a7114c53f36bfdd39cd51326d9e2a5269e7e566abbbc"
+   }
+  },
+  "iconv.big5-2003": {
+   "label": "macOS iconv BIG5-2003",
+   "runtime": "iconv",
+   "codec": "BIG5-2003",
+   "kind": "run",
+   "error_model": "strict",
+   "ops": "de",
+   "version": "macOS 27.0 (26A428) libiconv (Citrus)",
+   "key": "macos-27.0-26A428",
+   "decode": {
+    "cases": 65792,
+    "sha256": "00cefb4cdec757f19a1ceeb78f08fcddb2fc5e46328b78a91e8c0148b529cd7e"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "ec850e815d36b64485472fefc42c89d9d128c178321cef4ac398e8388625fe4e"
+   }
+  },
+  "iconv.big5-hkscs": {
+   "label": "macOS iconv BIG5-HKSCS",
+   "runtime": "iconv",
+   "codec": "BIG5-HKSCS",
+   "kind": "run",
+   "error_model": "strict",
+   "ops": "de",
+   "version": "macOS 27.0 (26A428) libiconv (Citrus)",
+   "key": "macos-27.0-26A428",
+   "decode": {
+    "cases": 65792,
+    "sha256": "2c551a1aa1190788c8334f66a4323fe7c8af7390d13f7b3ce09087c63ae08e1e"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "7ade3bdad22d06924bdc24b69667c79fba8833b2f6943297d9ab69de1dff3def"
+   }
+  },
+  "iconv.big5-ibm": {
+   "label": "macOS iconv BIG5-IBM",
+   "runtime": "iconv",
+   "codec": "BIG5-IBM",
+   "kind": "run",
+   "error_model": "strict",
+   "ops": "de",
+   "version": "macOS 27.0 (26A428) libiconv (Citrus)",
+   "key": "macos-27.0-26A428",
+   "decode": {
+    "cases": 65792,
+    "sha256": "e267f899091464009051097c116b0e0900cdf98667a2414289534365cd58f712"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "57cf70f25cbf848eaad2bce52decdbaabd05787d99dae7c8e0dcfa7c2e465186"
+   }
+  },
+  "iconv.big5-plus": {
+   "label": "macOS iconv BIG5-PLUS",
+   "runtime": "iconv",
+   "codec": "BIG5-PLUS",
+   "kind": "run",
+   "error_model": "strict",
+   "ops": "de",
+   "version": "macOS 27.0 (26A428) libiconv (Citrus)",
+   "key": "macos-27.0-26A428",
+   "decode": {
+    "cases": 65792,
+    "sha256": "b7a57313ea952a110b75d45c4042f1fa974bf05c438154203dd39acc73ef962b"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "5647b3440fe79e891ca32259234451bd4dfd0f994c5a5f272dba81eb87ef4789"
+   }
+  },
+  "iconv.cp950": {
+   "label": "macOS iconv CP950",
+   "runtime": "iconv",
+   "codec": "CP950",
+   "kind": "run",
+   "error_model": "strict",
+   "ops": "de",
+   "version": "macOS 27.0 (26A428) libiconv (Citrus)",
+   "key": "macos-27.0-26A428",
+   "decode": {
+    "cases": 65792,
+    "sha256": "249fd44945e36c1a07cd8114221155a559c3d7e840fdac34ea323b86a9c7cb8a"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "ed87d646920c0c5194c2cc03c272d73980f0d6cb8470a09ea2d9f88769988c5c"
+   }
+  },
+  "icu.ibm-1373": {
+   "label": "ICU ibm-1373_P100-2002 (ibm-1373)",
+   "runtime": "icu",
+   "codec": "ibm-1373_P100-2002",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "ICU 78.3 (ucnv C API)",
+   "key": "78.3",
+   "decode": {
+    "cases": 65792,
+    "sha256": "1d0ab3fb023af2a4dc6a5d3a168fdcb485845e4385866e24ded4e59e9d55be9c"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "782e3aa8c85336b8d3570dbbde39b944f335c9a55d4b94418a7370b31e5f5b7e"
+   }
+  },
+  "icu.ibm-1375": {
+   "label": "ICU ibm-1375_P100-2008 (Big5-HKSCS)",
+   "runtime": "icu",
+   "codec": "ibm-1375_P100-2008",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "ICU 78.3 (ucnv C API)",
+   "key": "78.3",
+   "decode": {
+    "cases": 65792,
+    "sha256": "fb75167622414bda66d4d062b61c5820abdafb9d1b811169238372f79cf4c7de"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "e6950295a19c640a0ab4871f29e0131b80eb5966df6a8ff664d4a8deb1051f6d"
+   }
+  },
+  "icu.ibm-5471": {
+   "label": "ICU ibm-5471_P100-2006 (MS950_HKSCS, x-MS950-HKSCS)",
+   "runtime": "icu",
+   "codec": "ibm-5471_P100-2006",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "ICU 78.3 (ucnv C API)",
+   "key": "78.3",
+   "decode": {
+    "cases": 65792,
+    "sha256": "46cf26a9a802aa9d824134e6d5cad908333b1bbac8cad18384f4c927eed51ace"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "1fc63a4cea806f59e238459abac54349b8ce76e2a292bba0304e34389b25b3ec"
+   }
+  },
+  "icu.ibm-950": {
+   "label": "ICU ibm-950_P110-1999 (cp950, x-IBM950)",
+   "runtime": "icu",
+   "codec": "ibm-950_P110-1999",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "ICU 78.3 (ucnv C API)",
+   "key": "78.3",
+   "decode": {
+    "cases": 65792,
+    "sha256": "a370c92fb86f271050eafbe613da289196f9361e6465c07e9553b0910698323f"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "8390c893eb3ae6c6d75d2dbccb4fb9b1714654cd6704ea2bd617a1960eebc2cc"
+   }
+  },
+  "icu.windows-950-2000": {
+   "label": "ICU windows-950-2000 (Big5, windows-950)",
+   "runtime": "icu",
+   "codec": "windows-950-2000",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "ICU 78.3 (ucnv C API)",
+   "key": "78.3",
+   "decode": {
+    "cases": 65792,
+    "sha256": "9649242c7aa98af11201c8d7116f3b87977b3a55cfb0cd9ff17561b49206d73b"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "8435ca502ccd461430a230d60ba60d8a63585d0eb3542a82f8ed9760ee20b22f"
+   }
+  },
+  "java.big5": {
+   "label": "Java Big5",
+   "runtime": "java",
+   "codec": "Big5",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "OpenJDK 64-Bit Server VM 27 (Homebrew)",
+   "key": "27",
+   "decode": {
+    "cases": 65792,
+    "sha256": "8e55cfcc91105855eb219cd9b827da62df6322e13d63de5a499b0600ac8903c3"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "ffd821ec655a3e1f2bd0faaa590809f8e19a4f3bbcd9f0c52d35d33cb73e5b73"
+   }
+  },
+  "java.big5-hkscs": {
+   "label": "Java Big5-HKSCS",
+   "runtime": "java",
+   "codec": "Big5-HKSCS",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "OpenJDK 64-Bit Server VM 27 (Homebrew)",
+   "key": "27",
+   "decode": {
+    "cases": 65792,
+    "sha256": "1eaf3f59ba97d7a8175f5da4cc362a921b5b7d1a5d2300cdf67c53a49c2db5e4"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "314c39641909cfa348c5fbd8fdc69c2f775c6528410999ac46454445475241e3"
+   }
+  },
+  "java.x-big5-hkscs-2001": {
+   "label": "Java x-Big5-HKSCS-2001",
+   "runtime": "java",
+   "codec": "x-Big5-HKSCS-2001",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "OpenJDK 64-Bit Server VM 27 (Homebrew)",
+   "key": "27",
+   "decode": {
+    "cases": 65792,
+    "sha256": "723abdcc6e4bec5e83b471447725ef0151e78b6edd34d2deef2787e7db5c567d"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "613da43172b29d0e2ef3a1ea776f7ee3bd113c29080e3b9cefac026cc0a2f3df"
+   }
+  },
+  "java.x-big5-solaris": {
+   "label": "Java x-Big5-Solaris",
+   "runtime": "java",
+   "codec": "x-Big5-Solaris",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "OpenJDK 64-Bit Server VM 27 (Homebrew)",
+   "key": "27",
+   "decode": {
+    "cases": 65792,
+    "sha256": "952562ae1f89f082547ab89a23119cd4b21507260360fc73b9aafdbcbd8baef7"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "24f995df36a6d807f06542be412e6fea08f85342392a7d01e8d96151bbf30516"
+   }
+  },
+  "java.x-ibm950": {
+   "label": "Java x-IBM950",
+   "runtime": "java",
+   "codec": "x-IBM950",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "OpenJDK 64-Bit Server VM 27 (Homebrew)",
+   "key": "27",
+   "decode": {
+    "cases": 65792,
+    "sha256": "350e7d2178351c4e437b4fa36cd2979f534a0cb2083ad5866a0eb862544d5895"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "9307a26af3bf0ae6137358ade3c11887ac8564c82b9f6426c91246e004634fe7"
+   }
+  },
+  "java.x-ms950-hkscs": {
+   "label": "Java x-MS950-HKSCS",
+   "runtime": "java",
+   "codec": "x-MS950-HKSCS",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "OpenJDK 64-Bit Server VM 27 (Homebrew)",
+   "key": "27",
+   "decode": {
+    "cases": 65792,
+    "sha256": "5d1ce24b5552fda3880dd664e73385c2d4dbe85824e246f1d9140593c3bb3ff5"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "185893a2ee59dc501ed34c73dacdb5002febfd485dd492099a9a2997a554c1fe"
+   }
+  },
+  "java.x-ms950-hkscs-xp": {
+   "label": "Java x-MS950-HKSCS-XP",
+   "runtime": "java",
+   "codec": "x-MS950-HKSCS-XP",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "OpenJDK 64-Bit Server VM 27 (Homebrew)",
+   "key": "27",
+   "decode": {
+    "cases": 65792,
+    "sha256": "908e076d0f98823aff06b2bc604a1951cc74f2ed070b98cb574cfc64a4fec62e"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "fc83fdf1c330d55eb4f75c21953c3d6f041c7f8c5112ba25e2baee37f4406c43"
+   }
+  },
+  "java.x-windows-950": {
+   "label": "Java x-windows-950",
+   "runtime": "java",
+   "codec": "x-windows-950",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "OpenJDK 64-Bit Server VM 27 (Homebrew)",
+   "key": "27",
+   "decode": {
+    "cases": 65792,
+    "sha256": "c4ac874d7ab2bbd5057070e712b0f55bb540649ac8b5790007b39fb7df9b0c91"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "eb89c102ec3b620402f9c18bde3adc4eb1d22209ccdf6e3ef16320e251abdb71"
+   }
+  },
+  "node.iconv-lite-big5": {
+   "label": "Node.js iconv-lite big5",
+   "runtime": "node",
+   "codec": "iconv-lite:big5",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Node 25.5.0 (ICU 78.2), iconv-lite 0.7.3",
+   "key": "iconv-lite-0.7.3",
+   "decode": {
+    "cases": 65792,
+    "sha256": "a61e45c7388ae6da9a6a2a48c0ee99d12e85c5f362d57a34fce497d452a36d78"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "7bae529e1d4a738c8ba370b61deb02a984021bcfc1c519ef526b3a6985428d07"
+   }
+  },
+  "node.iconv-lite-cp950": {
+   "label": "Node.js iconv-lite cp950",
+   "runtime": "node",
+   "codec": "iconv-lite:cp950",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Node 25.5.0 (ICU 78.2), iconv-lite 0.7.3",
+   "key": "iconv-lite-0.7.3",
+   "decode": {
+    "cases": 65792,
+    "sha256": "2f10d2c7d133c8b398087466773eb016aaa30533fe3eaebbb1cdf6cea1b27fb5"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "5b0defae565afec5cd1370ecebd66dca6671bf43ba4099a4e076dd85609fdaf3"
+   }
+  },
+  "node.textdecoder": {
+   "label": "Node.js TextDecoder('big5')",
+   "runtime": "node",
+   "codec": "textdecoder:big5",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "d",
+   "version": "Node 25.5.0 (ICU 78.2), iconv-lite 0.7.3",
+   "key": "node-25.5.0",
+   "decode": {
+    "cases": 65792,
+    "sha256": "9649242c7aa98af11201c8d7116f3b87977b3a55cfb0cd9ff17561b49206d73b"
+   }
+  },
+  "perl.big5-eten": {
+   "label": "Perl Encode big5-eten",
+   "runtime": "perl",
+   "codec": "big5-eten",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Perl 5.34.1, Encode 3.0801, Encode::TW 2.03",
+   "key": "Encode-3.0801",
+   "decode": {
+    "cases": 65792,
+    "sha256": "c869bcb284b833176a73fa5ca4ce24ab16206a1a5b5ae82f66fcc90586d6487d"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "797df81e18735b76af7088dfdabc2f980ef53adea20938059688b77d3c35e32d"
+   }
+  },
+  "perl.big5-hkscs": {
+   "label": "Perl Encode big5-hkscs",
+   "runtime": "perl",
+   "codec": "big5-hkscs",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Perl 5.34.1, Encode 3.0801, Encode::TW 2.03",
+   "key": "Encode-3.0801",
+   "decode": {
+    "cases": 65792,
+    "sha256": "1f04c57acb13edee34fc72ab5de247a4d488a2c5f296ff5a48f3107886c59116"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "d184b1076cb96445277edcf816b6f4e3a8d4bb2324e4038dcd9341e23b9b1104"
+   }
+  },
+  "perl.cp950": {
+   "label": "Perl Encode cp950",
+   "runtime": "perl",
+   "codec": "cp950",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Perl 5.34.1, Encode 3.0801, Encode::TW 2.03",
+   "key": "Encode-3.0801",
+   "decode": {
+    "cases": 65792,
+    "sha256": "d98e679640426020f4cb980868e447a1e9a9d0a4c753b3d152e166f2dc7f2f16"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "526bd1c21644e68eceed281b8e27fa7c119a63adb0beb20fe3124bab970f56a0"
+   }
+  },
+  "php.big-5": {
+   "label": "PHP mbstring BIG-5",
+   "runtime": "php",
+   "codec": "BIG-5",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "PHP 8.5.11 mbstring 8.5.11",
+   "key": "8.5.11",
+   "decode": {
+    "cases": 65792,
+    "sha256": "78234a8eca01ae7a2069408b15a5a9b97be4c6298304c3ce24779f17a8242578"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "cb7eb82e6311ddb2af0221502cafc93abba515446305e2511f3a85e27b53ad20"
+   }
+  },
+  "php.cp950": {
+   "label": "PHP mbstring CP950",
+   "runtime": "php",
+   "codec": "CP950",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "PHP 8.5.11 mbstring 8.5.11",
+   "key": "8.5.11",
+   "decode": {
+    "cases": 65792,
+    "sha256": "19a9e47fb5f63679d86792a475bbe8614727e17e802f2102354415110dcd51dd"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "1e1a424ad28e2177dfdbeaa744b06c62e24b2deb574d8862ae91232df4e96542"
+   }
+  },
+  "python.big5": {
+   "label": "Python codecs big5",
+   "runtime": "python",
+   "codec": "big5",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "CPython 3.13.0 (CPython)",
+   "key": "3.13.0",
+   "decode": {
+    "cases": 65792,
+    "sha256": "ff1cec889735990ac0afe22b0259c03aea770745e399053222ea03c1846076c4"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "99a07248d5c8749c36144d7c47a5634141f3501cc11b0f8a8b9d50dc066a1c28"
+   }
+  },
+  "python.big5hkscs": {
+   "label": "Python codecs big5hkscs",
+   "runtime": "python",
+   "codec": "big5hkscs",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "CPython 3.13.0 (CPython)",
+   "key": "3.13.0",
+   "decode": {
+    "cases": 65792,
+    "sha256": "1e9ddce96118a9a1c53d8e56ee11bae8997d8c4a43fff4cface665241b0dc822"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "c814050032cef460aabc07c5829c284253191932628e9bb868ce1da7c590c914"
+   }
+  },
+  "python.cp950": {
+   "label": "Python codecs cp950",
+   "runtime": "python",
+   "codec": "cp950",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "CPython 3.13.0 (CPython)",
+   "key": "3.13.0",
+   "decode": {
+    "cases": 65792,
+    "sha256": "22f5b612e0807e9f81f9ef071a50a197cb5150ab3a059331b84352988a03966f"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "f7331f40e1f8c72d783f3b121e59ba904884b3e474f4b00e483a73a4c83cea1f"
+   }
+  },
+  "ref.hkscs-2016": {
+   "label": "HKSCS-2016 data set (table, HKSCS part only)",
+   "runtime": "ref",
+   "codec": "ref.hkscs-2016",
+   "kind": "table",
+   "error_model": "strict",
+   "ops": "d",
+   "note": "reference/HKSCS2016.json",
+   "version": "reference/HKSCS2016.json sha256:a28a3b74e469726c",
+   "key": "a28a3b74e469726c7df2174346e9a3992760f5842c02ac07b834529bc5b931e5",
+   "decode": {
+    "cases": 5009,
+    "sha256": "f561ccc13e0b44c8ad98a47adc04da7f0b28283cfdb5a6536fb3368459b1770e"
+   }
+  },
+  "ref.ms-bestfit950": {
+   "label": "Microsoft bestfit950.txt (table, with best fit)",
+   "runtime": "ref",
+   "codec": "ref.ms-bestfit950",
+   "kind": "table",
+   "error_model": "strict",
+   "ops": "de",
+   "note": "reference/bestfit950.txt",
+   "version": "reference/bestfit950.txt sha256:cf8c23389a42a226",
+   "key": "cf8c23389a42a226ea707f7ec32c665556d1fc3364db25bd765ce64d54eaee2a",
+   "decode": {
+    "cases": 65792,
+    "sha256": "5acbf1be31a6c6ea8f4486022970652ce981154ffb987b4a5a1a2d97f27eafeb"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "74794a1ef8fdcbbba7d558b8e2f948b998101ad9c7f0b75d984d661ff6e02eb6"
+   }
+  },
+  "ref.ms-cp950": {
+   "label": "Microsoft CP950.TXT (table)",
+   "runtime": "ref",
+   "codec": "ref.ms-cp950",
+   "kind": "table",
+   "error_model": "strict",
+   "ops": "d",
+   "note": "reference/CP950.TXT",
+   "version": "reference/CP950.TXT sha256:ed403857b05e07ec",
+   "key": "ed403857b05e07ecd5667c7eff6b25898cb1fefe2d06cfe718d82d631e6058b6",
+   "decode": {
+    "cases": 65792,
+    "sha256": "249fd44945e36c1a07cd8114221155a559c3d7e840fdac34ea323b86a9c7cb8a"
+   }
+  },
+  "ref.unicode-big5": {
+   "label": "Unicode BIG5.TXT (table)",
+   "runtime": "ref",
+   "codec": "ref.unicode-big5",
+   "kind": "table",
+   "error_model": "strict",
+   "ops": "d",
+   "note": "reference/BIG5.TXT",
+   "version": "reference/BIG5.TXT sha256:d1b60c58a1d32791",
+   "key": "d1b60c58a1d327918f1616a620162c60ad2079a229ee42a73488f186e11f3aac",
+   "decode": {
+    "cases": 65792,
+    "sha256": "c82872cb5482f018b1e7e8ddc2a049e4549513b9453f72d4f9b5613dbb79bb3b"
+   }
+  },
+  "ref.whatwg": {
+   "label": "WHATWG Encoding Standard (algorithm + index-big5)",
+   "runtime": "ref",
+   "codec": "ref.whatwg",
+   "kind": "table",
+   "error_model": "replace",
+   "ops": "de",
+   "note": "reference/index-big5.txt",
+   "version": "reference/index-big5.txt sha256:08e24270c8e95d99",
+   "key": "08e24270c8e95d998c994c03f907e972480dc01f58743e078654cc466203c8ff",
+   "decode": {
+    "cases": 65792,
+    "sha256": "cfb35c0975a94f5089339a47c5fea6c1648dd5f0cea2703cb79385f8ec1b914d"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "5f46b3c32ff476cb317d757afd08109499c72e7a65502c0a2c2a98e2311a6a85"
+   }
+  },
+  "ruby.big5": {
+   "label": "Ruby Big5",
+   "runtime": "ruby",
+   "codec": "Big5",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Ruby 2.6.10p210 (universal.arm64e-darwin26)",
+   "key": "2.6.10",
+   "decode": {
+    "cases": 65792,
+    "sha256": "c2de4d730b64dff7c1771f7567be54a1d7994aa0126be6c0039148e07257cb5b"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "6ffdac0c6215d91b3301f81bd5865785a29916e38918366fb9c1157b3b84e2d7"
+   }
+  },
+  "ruby.big5-hkscs": {
+   "label": "Ruby Big5-HKSCS",
+   "runtime": "ruby",
+   "codec": "Big5-HKSCS",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Ruby 2.6.10p210 (universal.arm64e-darwin26)",
+   "key": "2.6.10",
+   "decode": {
+    "cases": 65792,
+    "sha256": "7b07fa25a41cac88f41fd79724c77638c278baaa09ffa9edbb0cabafde5a9b7e"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "04240bab5225681c900ea2806c5033e4ddd662e41cf80bd4a5b8c2d66ec03f28"
+   }
+  },
+  "ruby.big5-hkscs-2008": {
+   "label": "Ruby Big5-HKSCS:2008",
+   "runtime": "ruby",
+   "codec": "Big5-HKSCS:2008",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Ruby 2.6.10p210 (universal.arm64e-darwin26)",
+   "key": "2.6.10",
+   "decode": {
+    "cases": 65792,
+    "sha256": "7b07fa25a41cac88f41fd79724c77638c278baaa09ffa9edbb0cabafde5a9b7e"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "04240bab5225681c900ea2806c5033e4ddd662e41cf80bd4a5b8c2d66ec03f28"
+   }
+  },
+  "ruby.big5-uao": {
+   "label": "Ruby Big5-UAO",
+   "runtime": "ruby",
+   "codec": "Big5-UAO",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Ruby 2.6.10p210 (universal.arm64e-darwin26)",
+   "key": "2.6.10",
+   "decode": {
+    "cases": 65792,
+    "sha256": "816c1c76de22d1b6b50b7ad6945735f5abd9481be1d4df2f54cffa9699b98dbc"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "714085b2ffc88b1cba730ee3366af5f125beaad2014d35930b6dee9cdeecb5cd"
+   }
+  },
+  "ruby.cp950": {
+   "label": "Ruby CP950",
+   "runtime": "ruby",
+   "codec": "CP950",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "Ruby 2.6.10p210 (universal.arm64e-darwin26)",
+   "key": "2.6.10",
+   "decode": {
+    "cases": 65792,
+    "sha256": "3b94b38ad65703706f07f6c718ccaf857576a6c6e8451dfb50b61ad36fdb4cb8"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "685ec49cfb8f549db9ced4abb103b8b3aa7fa3c9906c0f4d1c0a8e61e7335823"
+   }
+  },
+  "rust.big5": {
+   "label": "Rust encoding_rs BIG5",
+   "runtime": "rust",
+   "codec": "big5",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "de",
+   "version": "encoding_rs 0.8.42 (rustc 1.98.1)",
+   "key": "0.8.42",
+   "decode": {
+    "cases": 65792,
+    "sha256": "8ecd7c35174b99c08b5d2f1e69d1d7135d182deda000e412fa05905d19b9b3fe"
+   },
+   "encode": {
+    "cases": 129028,
+    "sha256": "5f46b3c32ff476cb317d757afd08109499c72e7a65502c0a2c2a98e2311a6a85"
+   }
+  }
+ },
+ "collected": {
+  "date": "2026-10-01",
+  "platform": "Darwin 27.0 arm64"
+ }
+}
