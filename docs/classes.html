@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Divergence classes · big5-matrix</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main>
+  <h1>Divergence classes</h1>
+  <p class="lede">The one- and two-byte space split into regions. Each page lists every case in the region where some implementations disagree. Pairs whose first byte is ASCII are not listed: every decoder reads them as the ASCII byte followed by the second byte on its own.</p>
+  <div id="classes"></div>
+  <h2>Encoding</h2>
+  <p>For characters, use the <a href="lookup.html">lookup</a> (one character at a time) or the <a href="pair.html">writer → reader</a> page (everything one encoder writes, read by one decoder).</p>
+</main>
+<script type="module">
+import { loadSummary } from './assets/data.js';
+import { header, esc, fmt, table } from './assets/ui.js';
+
+header('Divergences');
+const S = await loadSummary();
+document.getElementById('classes').innerHTML = table(
+  [{ label: 'Class' }, { label: 'Cases', num: true }, { label: 'With disagreement', num: true }, { label: 'Ways to disagree', num: true }],
+  S.site.classes.map((c) => [`<a href="class.html?id=${c.id}">${esc(c.title)}</a><div class="muted">${esc(c.description)}</div>`,
+    fmt(c.cases), fmt(c.divergent), fmt(c.pattern_count)]));
+</script>
+</body>
+</html>

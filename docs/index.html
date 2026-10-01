@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>big5-matrix: how Big5 converters disagree</title>
+<meta name="description" content="Every Big5 byte sequence and every relevant Unicode character, run through 40 converters in 12 runtimes, with every disagreement.">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main>
+  <h1>How Big5 converters disagree</h1>
+  <p class="lede" id="lede">Every one- and two-byte Big5 sequence and every BMP and plane-2 character, run through the converters of today's runtimes and compared with the published tables.</p>
+
+  <form class="lookup" action="lookup.html">
+    <input name="q" placeholder="Bytes (A1 45), a character (兀) or U+2027" aria-label="Byte sequence or character">
+    <button>Look up</button>
+  </form>
+
+  <ul class="facts" id="facts"></ul>
+
+  <h2>Write with one runtime, read with another</h2>
+  <p>Each cell: characters the writer encodes as "big5" that the reader, also asking for "big5", gives back as different text without an error / reports as an error. Click a cell for the list.</p>
+  <div id="big5"></div>
+  <h3>The same, by the name "cp950"</h3>
+  <div id="cp950"></div>
+
+  <h2>Families</h2>
+  <p>Decoders whose character maps differ in at most 400 byte sequences (single linkage).</p>
+  <div id="families"></div>
+
+  <h2>Where they disagree</h2>
+  <div id="classes"></div>
+
+  <h2>Malformed input</h2>
+  <p>What each decoder does after a lead byte (0x81–0xFE) that does not start a character. <em>kept</em>: one error for the lead byte, the next byte decoded on its own; <em>swallowed</em>: one error eats both bytes; <em>stops</em>: no replacement mode, the conversion fails.</p>
+  <div id="errors"></div>
+
+  <p class="status" id="footer"></p>
+</main>
+<script type="module">
+import { loadSummary } from './assets/data.js';
+import { header, esc, fmt, implLink, table } from './assets/ui.js';
+
+header('Overview');
+const S = await loadSummary();
+const N = S.numbers, site = S.site;
+
+document.getElementById('lede').textContent =
+  `Every one- and two-byte Big5 sequence (${fmt(N['decode.cases'])}) and every BMP and plane-2 character (${fmt(N['encode.cases'])} cases), run through ${N['impls.runs']} converters in ${N['impls.runtimes']} runtimes and libraries and compared with ${N['impls.tables']} published tables.`;
+
+const facts = [
+  [fmt(N['decode.divergent_total']), `of ${fmt(N['decode.nontrivial_cases'])} non-ASCII byte sequences decoded differently by some converter`],
+  [`${N['decode.hanzi_divergent']} of ${fmt(N['decode.hanzi_cases'])}`, 'core hanzi in dispute: the disagreements are elsewhere'],
+  [`${N['pair.big5.clean']} of ${N['pair.big5.total']}`, 'writer/reader pairs of "big5" that lose nothing'],
+  [fmt(N['fact.node.vs_whatwg']), "byte sequences where Node's TextDecoder('big5') differs from the WHATWG decoder"],
+  [fmt(N['oneway.iconv.big5.to-ascii']), 'characters macOS iconv silently turns into ASCII when writing BIG5'],
+  [fmt(N['fact.iconv.hkscs.hanzi_unencodable']), "ordinary hanzi macOS iconv's BIG5-HKSCS cannot encode"],
+];
+document.getElementById('facts').innerHTML = facts.map(([b, s]) => `<li><b>${esc(b)}</b><span>${esc(s)}</span></li>`).join('');
+
+function matrix(key) {
+  const B = site.by_name[key];
+  const names = B.names.map((n) => n[0]);
+  const cell = new Map(B.pairs.map((p) => [`${p.writer}|${p.reader}`, p]));
+  const head = `<tr><th>writer ↓ reader →</th>${names.map((n) => `<th class="num">${esc(n)}</th>`).join('')}</tr>`;
+  const rows = B.names.map(([w, label, wi]) => {
+    const tds = B.names.map(([r, , , ri]) => {
+      const p = cell.get(`${w}|${r}`);
+      if (!p) return '<td></td>';
+      const bad = p.changed + p.error;
+      const cls = [bad === 0 ? 'zero' : '', w === r ? 'diag' : ''].join(' ');
+      const text = bad === 0 ? '0' : `${fmt(p.changed)} / ${fmt(p.error)}`;
+      return `<td class="${cls}"><a href="pair.html?w=${encodeURIComponent(wi)}&r=${encodeURIComponent(ri)}" title="${esc(`${w} writes, ${r} reads`)}">${text}</a></td>`;
+    }).join('');
+    return `<tr><th class="row" title="${esc(label)}">${esc(w)}</th>${tds}</tr>`;
+  }).join('');
+  const legend = B.names.map(([n, label, wi, ri]) => `<li>${esc(n)}: ${esc(label)} (${implLink(wi)}${wi !== ri ? ` / ${implLink(ri)}` : ''})</li>`).join('');
+  return `<div class="scroll"><table class="matrix"><thead>${head}</thead><tbody>${rows}</tbody></table></div><details><summary>Which converter each name means</summary><ul>${legend}</ul></details>`;
+}
+document.getElementById('big5').innerHTML = matrix('big5');
+document.getElementById('cp950').innerHTML = matrix('cp950');
+
+document.getElementById('families').innerHTML = table(
+  [{ label: '#' }, { label: 'Family' }, { label: 'Members' }, { label: 'Max. distance inside', num: true }],
+  site.families.map((f) => [String(f.n), esc(f.name), f.members.map(implLink).join(' '), fmt(f.max_inside)]));
+
+document.getElementById('classes').innerHTML = table(
+  [{ label: 'Class' }, { label: 'Cases', num: true }, { label: 'With disagreement', num: true }, { label: 'Ways to disagree', num: true }],
+  site.classes.map((c) => [`<a href="class.html?id=${c.id}">${esc(c.title)}</a><div class="muted">${esc(c.description)}</div>`,
+    fmt(c.cases), fmt(c.divergent), fmt(c.pattern_count)]));
+
+const short = (d) => {
+  const tot = Object.values(d).reduce((a, b) => a + b, 0);
+  if (!tot) return '<span class="muted">none</span>';
+  return Object.entries(d).sort((a, b) => b[1] - a[1]).map(([k, v]) => (v === tot ? k : `${k} ${fmt(v)}`)).join(', ');
+};
+document.getElementById('errors').innerHTML = table(
+  [{ label: 'Decoder' }, { label: 'Error marker' }, { label: 'Lead + ASCII 00–3F/7F' }, { label: 'Lead + unmapped 40–7E' }, { label: 'Lead + 80–A0/FF' }, { label: 'Lead at end' }],
+  Object.entries(site.error_handling).map(([id, e]) => [implLink(id), esc(e.substitute), short(e.ascii_nontrail),
+    short(e.ascii_unmapped), short(e.bad_trail), short(e.lone_lead)]));
+
+document.getElementById('footer').innerHTML =
+  `Data collected ${esc(N['collected.date'])} on ${esc(N['collected.platform'])}. Every page reads the committed <a href="https://github.com/useless-husband/big5-matrix/tree/main/data">data</a> directly.`;
+</script>
+</body>
+</html>

@@ -49,6 +49,9 @@ FAMILY_NAMES = {
 }
 
 
+SITE = "https://useless-husband.github.io/big5-matrix/docs/"
+
+
 def fmt(n) -> str:
     return f"{n:,}" if isinstance(n, int) else str(n)
 
@@ -194,7 +197,7 @@ def build(A: dict) -> dict:
         if rid == "ascii-first":
             continue  # derived from the single-byte cases (see decode.ascii_first_exceptions)
         c = C[rid]
-        rows.append([f"[{title}](https://useless-husband.github.io/big5-matrix/class.html?id={rid})",
+        rows.append([f"[{title}]({SITE}class.html?id={rid})",
                      c["cases"], c["divergent"], len(c["patterns"])])
         N[f"class.{rid}.cases"] = c["cases"]
         N[f"class.{rid}.divergent"] = c["divergent"]
@@ -293,10 +296,44 @@ def build(A: dict) -> dict:
     for k, v in A.get("facts", {}).items():
         N[f"fact.{k}"] = v
 
+    site = site_data(A, fam)
+
     # headline numbers used in the README
     N["chromium.vs_whatwg"] = A["distance"]["browser.chromium"]["ref.whatwg"] if "browser.chromium" in A["distance"] else 0
     N["rust.vs_whatwg"] = A["distance"]["rust.big5"]["ref.whatwg"]
-    return {"numbers": N, "tables": T}
+    return {"numbers": N, "tables": T, "site": site}
+
+
+def site_data(A: dict, fam: dict[str, int]) -> dict:
+    """Structured data for the static site (docs/), which reads it with the raw result files."""
+    impls = []
+    for i, v in A["impls"].items():
+        impls.append({"id": i, **{k: v[k] for k in ("label", "kind", "runtime", "codec", "ops", "error_model", "version")},
+                      "family": fam.get(i)})
+    families = [{"n": n, "name": family_name(f), "members": f,
+                 "max_inside": max((A["distance"][a][b] for a in f for b in f), default=0)}
+                for n, f in enumerate(A["families"], 1)]
+    classes = []
+    for rid, title, desc in DECODE_REGIONS:
+        if rid == "ascii-first":
+            continue
+        c = A["decode_classes"][rid]
+        classes.append({"id": rid, "title": title, "description": desc, "kind": c["kind"], "cases": c["cases"],
+                        "divergent": c["divergent"], "patterns": c["patterns"][:12],
+                        "pattern_count": len(c["patterns"])})
+    by_name = {}
+    for key in ("big5", "cp950"):
+        B = A[f"by_name_{key}"]
+        by_name[key] = {"names": B["names"],
+                        "pairs": [{k: v for k, v in p.items() if k != "rows"} for p in B["pairs"]]}
+    within = {e: {"btb": {k: v for k, v in w["bytes_text_bytes"].items() if k != "rows"},
+                  "tbt": {k: v for k, v in w["text_bytes_text"].items() if k != "rows"}}
+              for e, w in A["roundtrips"]["within"].items()}
+    oneway = {e: dict(Counter(r[3] for r in rows)) for e, rows in A["oneway"].items()}
+    return {"impls": impls, "families": families, "classes": classes, "by_name": by_name,
+            "error_handling": A["error_handling"], "within": within, "oneway": oneway,
+            "fingerprint": A["fingerprint"], "repertoire": A["repertoire"], "regions": REGION_SHORT,
+            "code_regions": CODE_REGIONS, "distance": A["distance"]}
 
 
 PAIRS_OF_INTEREST = [

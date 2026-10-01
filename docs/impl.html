@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Implementations · big5-matrix</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main>
+  <h1 id="title">Implementations</h1>
+  <div id="out"></div>
+</main>
+<script type="module">
+import { loadSummary } from './assets/data.js';
+import { header, esc, fmt, implLink, param, table, REPO } from './assets/ui.js';
+
+header('Implementations');
+const S = await loadSummary();
+const site = S.site;
+const id = param('id');
+const out = document.getElementById('out');
+const refShort = { 'ref.whatwg': 'WHATWG', 'ref.unicode-big5': 'BIG5.TXT', 'ref.ms-cp950': 'CP950.TXT', 'ref.ms-bestfit950': 'bestfit950', 'ref.hkscs-2016': 'HKSCS-2016' };
+
+if (!id) {
+  out.innerHTML = `<p class="lede">Every column of the study: ${fmt(S.numbers['impls.runs'])} converters that were run and ${fmt(S.numbers['impls.tables'])} published tables.</p>` +
+    table([{ label: 'Column' }, { label: 'What' }, { label: 'Version tested' }, { label: 'Family', num: true }],
+      site.impls.map((i) => [implLink(i.id), esc(i.label), esc(i.kind === 'run' ? i.version : 'table'), i.family ? String(i.family) : '']));
+} else {
+  const im = site.impls.find((i) => i.id === id);
+  document.title = `${id} · big5-matrix`;
+  document.getElementById('title').textContent = id;
+  const parts = [`<p class="lede">${esc(im.label)}. ${im.kind === 'run' ? `Tested: ${esc(im.version)}.` : `A published table (${esc(im.version)}), not a converter run.`}</p>`];
+  const fam = site.families.find((f) => f.members.includes(id));
+  if (fam) {
+    parts.push(`<h2>Family</h2><p>${esc(fam.name)}. ${fam.members.length > 1 ? `Members: ${fam.members.filter((m) => m !== id).map(implLink).join(' ')}` : 'No other member.'}</p>`);
+  }
+  if (site.distance[id]) {
+    const near = Object.entries(site.distance[id]).filter(([k]) => k !== id).sort((a, b) => a[1] - b[1]).slice(0, 6);
+    parts.push(`<h3>Closest decoders</h3>${table([{ label: 'Decoder' }, { label: 'Byte sequences decoded differently', num: true }], near.map(([k, v]) => [implLink(k), fmt(v)]))}`);
+  }
+  const fp = site.fingerprint[id];
+  if (fp) {
+    const rows = site.code_regions.map((r) => {
+      const e = fp[r];
+      const diffs = Object.keys(refShort).filter((k) => k in e).map((k) => `${refShort[k]} ${fmt(e[k])}`).join(', ');
+      return [`<a href="class.html?id=${r}">${esc(site.regions[r])}</a>`, fmt(e.chars), fmt(e.pua), esc(diffs)];
+    });
+    parts.push(`<h2>Character map by region</h2>${table([{ label: 'Region' }, { label: 'Characters', num: true }, { label: 'Private Use', num: true }, { label: 'Differences from each table' }], rows)}`);
+  }
+  const eh = site.error_handling[id];
+  if (eh) {
+    const fmtD = (d) => Object.entries(d).map(([k, v]) => `${k} ${fmt(v)}`).join(', ') || 'none (all are characters)';
+    parts.push(`<h2>Malformed input</h2>${table([{ label: 'Situation' }, { label: 'Outcome (cases)' }], [
+      ['Error marker', esc(eh.substitute)],
+      ['Lead byte + ASCII 0x00–0x3F or 0x7F', esc(fmtD(eh.ascii_nontrail))],
+      ['Lead byte + unmapped ASCII 0x40–0x7E', esc(fmtD(eh.ascii_unmapped))],
+      ['Lead byte + 0x80–0xA0 or 0xFF', esc(fmtD(eh.bad_trail))],
+      ['Lead byte at the end of the input', esc(fmtD(eh.lone_lead))],
+      ['Bytes 0x80 / 0xFF alone', esc(`${eh.byte_80} / ${eh.byte_ff}`)],
+    ])}`);
+  }
+  const rep = site.repertoire[id];
+  const w = site.within[id];
+  if (rep && 'encode_nonascii' in rep) {
+    const ow = site.oneway[id] || {};
+    parts.push(`<h2>Encoding</h2>${table([{ label: 'Measure' }, { label: 'Count', num: true }], [
+      ['Non-ASCII code points encoded', fmt(rep.encode_nonascii)],
+      ['of which Private Use', fmt(rep.encode_pua)],
+      ['of which plane 2', fmt(rep.encode_supplementary)],
+      ['Encoded to nothing, without an error', fmt(rep.encode_dropped)],
+      ["Written as '?'", fmt(rep.encode_substituted)],
+      ['One-way: to an ASCII look-alike', fmt(ow['to-ascii'] || 0)],
+      ['One-way: from Private Use input', fmt(ow['pua-input'] || 0)],
+      ['One-way: to bytes its own decoder rejects', fmt(ow.undecodable || 0)],
+      ['One-way: to another character', fmt(ow.other || 0)],
+    ])}`);
+  }
+  if (w) {
+    parts.push(`<h2>Its own round trips</h2><p>Bytes → text → bytes: ${fmt(w.btb.same)} same, ${fmt(w.btb.changed)} changed, ${fmt(w.btb.lost)} lost. Text → bytes → text: ${fmt(w.tbt.same)} same, ${fmt(w.tbt.changed)} changed, ${fmt(w.tbt.error)} errors. <a href="pair.html?w=${encodeURIComponent(id)}&r=${encodeURIComponent(id === 'dotnet.950-default' ? 'dotnet.950' : id)}">See the list</a>.</p>`);
+  }
+  const files = [];
+  if (im.ops.includes('d')) files.push(`<a href="${REPO}/blob/main/data/decode/${id}.txt.gz">decode</a>`);
+  if (im.ops.includes('e')) files.push(`<a href="${REPO}/blob/main/data/encode/${id}.txt.gz">encode</a>`);
+  parts.push(`<h2>Raw data</h2><p>${files.join(', ')} results (gzip; one line per case in the order of <code>big5matrix/cases.py</code>). <code>python3 -m big5matrix dump ${esc(id)} decode</code> prints them with their inputs.</p>`);
+  out.innerHTML = parts.join('');
+}
+</script>
+</body>
+</html>

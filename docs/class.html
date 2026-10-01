@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Divergence class · big5-matrix</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main>
+  <h1 id="title">Divergence class</h1>
+  <p class="lede" id="desc"></p>
+  <div id="summary"></div>
+  <h2>Ways to disagree</h2>
+  <p>Cases grouped by how the implementations split (the most common splits; each group lists the implementations that agree).</p>
+  <div id="patterns"></div>
+  <h2>Every case</h2>
+  <p class="status" id="status"></p>
+  <div id="rows"></div>
+</main>
+<script type="module">
+import { loadSummary, glyph, cpLabel } from './assets/data.js';
+import { Decoders } from './assets/classes.js';
+import { header, esc, fmt, implLink, param, bytesLabel } from './assets/ui.js';
+
+header('Divergences');
+const S = await loadSummary();
+const id = param('id') || 'symbols';
+const c = S.site.classes.find((x) => x.id === id);
+if (!c) {
+  document.getElementById('title').textContent = 'Unknown class';
+} else {
+  document.title = `${c.title} · big5-matrix`;
+  document.getElementById('title').textContent = c.title;
+  document.getElementById('desc').textContent = c.description;
+  const what = { mapping: 'Compared: which character each implementation decodes the bytes to (tables included, a partial table only where it has entries).',
+    recovery: 'Compared: what each converter does when the pair is not a character (published tables say nothing about malformed input, so only converters and the WHATWG algorithm take part).',
+    lone: 'Compared: what each converter does with a lead byte at the end of the input.',
+    full: 'Compared: the decoded text.' }[c.kind];
+  document.getElementById('summary').innerHTML = `<p>${fmt(c.divergent)} of ${fmt(c.cases)} cases have some disagreement, in ${fmt(c.pattern_count)} different ways. ${esc(what)}</p>`;
+  const show = (v) => (c.kind === 'mapping' || c.kind === 'full'
+    ? `<span class="glyph">${esc(glyph(v))}</span>${esc(cpLabel(v))}` : esc(v));
+  document.getElementById('patterns').innerHTML = c.patterns.map((p) => {
+    const gs = [...p.groups].sort((a, b) => b.length - a.length);
+    const rest = gs.slice(1).map((g) => `<div>${g.map(implLink).join(' ')}</div>`).join('<div class="muted">versus</div>');
+    return `<div class="group"><b>${fmt(p.count)}</b> case${p.count === 1 ? '' : 's'}, for example <a href="lookup.html?q=${p.example}"><code>${esc(bytesLabel(p.example))}</code></a>
+    ${rest}<div class="muted">versus the other ${gs[0].length} <details style="display:inline"><summary>list</summary>${gs[0].map(implLink).join(' ')}</details></div></div>`;
+  }).join('') || '<p>None.</p>';
+
+  const st = document.getElementById('status');
+  const D = await Decoders.load(S, (n, t) => { st.textContent = `Reading decode results ${n}/${t}…`; });
+  st.textContent = 'Comparing…';
+  const { rows } = D.classRows(id);
+  const PAGE = 150;
+  let page = 0;
+  const box = document.getElementById('rows');
+  function render() {
+    const slice = rows.slice(page * PAGE, (page + 1) * PAGE);
+    const pager = rows.length > PAGE ? `<div class="pager"><button data-d="-1" ${page === 0 ? 'disabled' : ''}>Previous</button>
+      <span class="status">${fmt(page * PAGE + 1)}–${fmt(Math.min(rows.length, (page + 1) * PAGE))} of ${fmt(rows.length)}</span>
+      <button data-d="1" ${(page + 1) * PAGE >= rows.length ? 'disabled' : ''}>Next</button></div>` : '';
+    // The largest group is folded ("and N others") so the minority stands out.
+    const groupHtml = ([v, ids], k) => (k === 0 && ids.length > 6
+      ? `<div><span class="value">${show(v)}</span> <details style="display:inline"><summary class="muted">${ids.length} implementations</summary>${ids.map(implLink).join(' ')}</details></div>`
+      : `<div><span class="value">${show(v)}</span> ${ids.map(implLink).join(' ')}</div>`);
+    box.innerHTML = pager + slice.map((r) => `<div class="group"><a href="lookup.html?q=${r.case}"><code>${esc(bytesLabel(r.case))}</code></a>
+      ${r.groups.map(groupHtml).join('')}</div>`).join('') + pager;
+    for (const b of box.querySelectorAll('.pager button')) {
+      b.onclick = () => { page += Number(b.dataset.d); render(); window.scrollTo(0, box.offsetTop - 20); };
+    }
+  }
+  render();
+  st.textContent = rows.length === c.divergent ? '' : `Note: ${rows.length} rows here, ${c.divergent} in the summary.`;
+}
+</script>
+</body>
+</html>

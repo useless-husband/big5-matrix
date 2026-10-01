@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Look up a byte sequence or character · big5-matrix</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main>
+  <h1>Look up</h1>
+  <p class="lede">A one- or two-byte sequence shows what every decoder makes of it; a character shows what every encoder writes for it.</p>
+  <form class="lookup" action="lookup.html">
+    <input name="q" id="q" placeholder="A1 45, 8862, 兀, U+2027" aria-label="Byte sequence or character">
+    <button>Look up</button>
+  </form>
+  <p class="status" id="status"></p>
+  <div id="out"></div>
+</main>
+<script type="module">
+import { loadSummary, results, decodeIndex, encodeIndex, normDecode, parseQuery, glyph, cpLabel } from './assets/data.js';
+import { header, esc, implLink, param, table, bytesLabel } from './assets/ui.js';
+
+header('Look up');
+const q = param('q') || '';
+document.getElementById('q').value = q;
+const st = document.getElementById('status');
+const out = document.getElementById('out');
+
+function regionOf(hex) {
+  const b = hex.match(/../g).map((x) => parseInt(x, 16));
+  if (b.length === 1) return b[0] < 0x80 ? 'ascii' : (b[0] === 0x80 || b[0] === 0xff ? 'byte-80-ff' : 'lone-lead');
+  const [l, t] = b;
+  const trail = (t >= 0x40 && t <= 0x7e) || (t >= 0xa1 && t <= 0xfe);
+  if (l < 0x80) return null;
+  if (l === 0x80 || l === 0xff) return 'byte-80-ff';
+  if (t < 0x80 && !trail) return 'ascii-after-lead';
+  if (!trail) return 'bad-trail';
+  const c = l * 256 + t;
+  if (l <= 0xa0) return 'eudc-8140';
+  if (c <= 0xa3bf) return 'symbols';
+  if (c <= 0xa3fe) return 'a3c0';
+  if (c <= 0xc67e) return 'hanzi1';
+  if (c <= 0xc8fe) return 'c6a1';
+  if (c <= 0xf9d5) return 'hanzi2';
+  if (c <= 0xf9fe) return 'f9d6';
+  return 'eudc-fa40';
+}
+
+function groupsHtml(groups, render) {
+  return [...groups.entries()].sort((a, b) => b[1].length - a[1].length)
+    .map(([v, ids]) => `<div class="group"><div class="value">${render(v)}</div><div>${ids.map(implLink).join(' ')}</div></div>`).join('');
+}
+
+async function run() {
+  if (!q) return;
+  const p = parseQuery(q);
+  if (!p) { st.textContent = 'Type one or two bytes in hex (A1 45), a single character, or U+XXXX.'; return; }
+  const S = await loadSummary();
+  const impls = S.site.impls.filter((i) => i.ops.includes(p.op));
+  st.textContent = `Reading ${impls.length} result files…`;
+  if (p.op === 'd') {
+    const idx = decodeIndex(p.arg);
+    const raw = await Promise.all(impls.map((i) => results(i.id, 'd').then((r) => r[idx])));
+    const groups = new Map();
+    impls.forEach((im, k) => {
+      const n = normDecode(raw[k]);
+      if (!groups.has(n)) groups.set(n, []);
+      groups.get(n).push(im.id);
+    });
+    const reg = regionOf(p.arg);
+    const cls = S.site.classes.find((c) => c.id === reg);
+    out.innerHTML = `<h2>Bytes <code>${esc(bytesLabel(p.arg))}</code></h2>
+      ${cls ? `<p>Region: <a href="class.html?id=${cls.id}">${esc(cls.title)}</a>. ${esc(cls.description)}</p>` : '<p>The first byte is ASCII: every decoder reads it as itself and then reads the second byte on its own.</p>'}
+      <p>${groups.size === 1 ? 'Every decoder agrees.' : `${groups.size} different results.`} "error" is U+FFFD, a marked substitute, or the point where a converter without a replacement mode stopped.</p>
+      ${groupsHtml(groups, (v) => `<span class="glyph">${esc(glyph(v))}</span>${esc(cpLabel(v))}`)}
+      <h3>Raw results</h3>
+      ${table([{ label: 'Implementation' }, { label: 'Result as written by the adapter' }], impls.map((im, k) => [implLink(im.id), `<code>${esc(raw[k])}</code>`]))}`;
+  } else {
+    const eindex = await encodeIndex();
+    const idx = eindex.get(p.arg);
+    if (idx === undefined) {
+      st.textContent = `U+${p.arg} is not one of the encode cases (the BMP, plane 2, and sequences some decoder produced).`;
+      return;
+    }
+    const raw = await Promise.all(impls.map((i) => results(i.id, 'e').then((r) => r[idx])));
+    const groups = new Map();
+    impls.forEach((im, k) => {
+      if (!groups.has(raw[k])) groups.set(raw[k], []);
+      groups.get(raw[k]).push(im.id);
+    });
+    const ch = glyph(p.arg);
+    out.innerHTML = `<h2><span class="glyph">${esc(ch)}</span>U+${esc(p.arg)}</h2>
+      <p>${groups.size === 1 ? 'Every encoder agrees.' : `${groups.size} different results.`} "error" means the encoder reported the character as unmappable; "nothing" means it wrote no bytes and reported nothing. Click bytes to see how every decoder reads them.</p>
+      ${groupsHtml(groups, (v) => (v === '!' ? '<span class="err">error</span>' : v === '-' ? 'nothing'
+        : (v.length <= 4 ? `<a href="lookup.html?q=${v}"><code>${esc(bytesLabel(v))}</code></a>` : `<code>${esc(bytesLabel(v))}</code>`)))}`;
+  }
+  st.textContent = '';
+}
+run().catch((e) => { st.textContent = `Could not load the data: ${e.message}`; });
+</script>
+</body>
+</html>

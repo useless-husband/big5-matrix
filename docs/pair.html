@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Writer → reader · big5-matrix</title>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main>
+  <h1>Writer → reader</h1>
+  <p class="lede">Pick two implementations. <b>Text → bytes → text</b>: every character the writer encodes, read back by the reader. <b>Bytes → text → bytes</b>: every byte sequence the reader decodes to a character, written again by the writer. Pick the same implementation twice for its own round trip.</p>
+  <form id="f" class="lookup">
+    <label>Writer (encoder) <select name="w" id="w"></select></label>
+    <label>Reader (decoder) <select name="r" id="r"></select></label>
+    <label>Direction <select name="dir" id="dir">
+      <option value="tbt">text → bytes → text</option>
+      <option value="btb">bytes → text → bytes</option>
+    </select></label>
+    <button>Compare</button>
+  </form>
+  <p class="status" id="status"></p>
+  <div id="out"></div>
+</main>
+<script type="module">
+import { loadSummary, results, encodeArgs, encodeIndex, interchange, transcode, charMap, glyph, cpLabel } from './assets/data.js';
+import { header, esc, fmt, implLink, param, bytesLabel } from './assets/ui.js';
+
+header('Writer → reader');
+const S = await loadSummary();
+const encs = S.site.impls.filter((i) => i.ops.includes('e'));
+const decs = S.site.impls.filter((i) => i.ops.includes('d') && i.id !== 'ref.hkscs-2016');
+const opt = (list, sel) => list.map((i) => `<option value="${i.id}" ${i.id === sel ? 'selected' : ''}>${esc(i.id)}</option>`).join('');
+const W = param('w') || 'python.big5';
+const R = param('r') || 'go.big5';
+const DIR = param('dir') || 'tbt';
+document.getElementById('w').innerHTML = opt(encs, W);
+document.getElementById('r').innerHTML = opt(decs, R);
+document.getElementById('dir').value = DIR;
+const st = document.getElementById('status');
+const out = document.getElementById('out');
+const decoderFor = (e) => (e === 'dotnet.950-default' ? 'dotnet.950' : e);
+
+async function run() {
+  if (!param('w') && !param('r')) { st.textContent = 'Showing Python big5 → Go as an example.'; }
+  st.textContent = 'Reading results…';
+  const eargs = await encodeArgs();
+  const [enc, dec] = await Promise.all([results(W, 'e'), results(R, 'd')]);
+  let res;
+  let rows;
+  if (DIR === 'tbt') {
+    res = interchange(eargs, enc, dec, { rows: true });
+    rows = res.rows.map(([a, b, back, k]) => [a, b, back, k]);
+  } else {
+    // bytes -> text with the reader, then text -> bytes with the writer
+    res = transcode(charMap(dec), await encodeIndex(), enc, { rows: true });
+    rows = res.rows.map(([code, text, b, k]) => [text, code, b, k]);
+  }
+  const head = DIR === 'tbt'
+    ? `<p>${implLink(W)} writes, ${implLink(R)} reads. Of the characters the writer encodes, <b>${fmt(res.same)}</b> come back unchanged, <b>${fmt(res.changed)}</b> come back as different text without an error${res.changed_pua ? ` (${fmt(res.changed_pua)} of them Private Use input)` : ''}, and <b>${fmt(res.error)}</b> make the reader report an error.${res.substituted ? ` The writer replaced ${fmt(res.substituted)} more with '?' itself.` : ''}</p>`
+    : `<p>${implLink(R)} reads, ${implLink(W)} writes the text again. Of the byte sequences the reader decodes to a character, <b>${fmt(res.same)}</b> are written back as the same bytes, <b>${fmt(res.changed)}</b> as different bytes, and <b>${fmt(res.lost)}</b> cannot be written at all.</p>`;
+  const PAGE = 200;
+  let page = 0;
+  function render() {
+    const slice = rows.slice(page * PAGE, (page + 1) * PAGE);
+    const pager = rows.length > PAGE ? `<div class="pager"><button data-d="-1" ${page === 0 ? 'disabled' : ''}>Previous</button>
+      <span class="status">${fmt(page * PAGE + 1)}–${fmt(Math.min(rows.length, (page + 1) * PAGE))} of ${fmt(rows.length)}</span>
+      <button data-d="1" ${(page + 1) * PAGE >= rows.length ? 'disabled' : ''}>Next</button></div>` : '';
+    const body = slice.map(([text, b1, b2, k]) => {
+      const t = `<span class="glyph">${esc(glyph(text))}</span>${esc(cpLabel(text))}`;
+      if (DIR === 'tbt') {
+        return `<tr><td>${t}</td><td><a href="lookup.html?q=${b1}"><code>${esc(bytesLabel(b1))}</code></a></td>
+          <td class="${k === 'error' ? 'err' : ''}"><span class="glyph">${esc(glyph(b2))}</span>${esc(cpLabel(b2))}</td></tr>`;
+      }
+      return `<tr><td><a href="lookup.html?q=${b1}"><code>${esc(bytesLabel(b1))}</code></a></td><td>${t}</td>
+        <td class="${k === 'lost' ? 'err' : ''}">${b2 === '!' ? 'cannot encode' : b2 === '-' ? 'nothing' : `<code>${esc(bytesLabel(b2))}</code>`}</td></tr>`;
+    }).join('');
+    const cols = DIR === 'tbt' ? ['Character', 'Writer\'s bytes', 'Reader\'s text'] : ['Bytes', 'Reader\'s text', 'Writer\'s bytes'];
+    out.innerHTML = head + (rows.length ? pager + `<div class="scroll"><table><thead><tr>${cols.map((c) => `<th>${c}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>` + pager : '<p>Nothing changes.</p>');
+    for (const b of out.querySelectorAll('.pager button')) b.onclick = () => { page += Number(b.dataset.d); render(); };
+  }
+  render();
+  st.textContent = '';
+}
+run().catch((e) => { st.textContent = `Could not load the data: ${e.message}`; });
+</script>
+</body>
+</html>

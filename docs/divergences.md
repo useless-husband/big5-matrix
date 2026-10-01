@@ -326,19 +326,19 @@ case):
 <!--t:classes-->
 | Class | Cases | Cases with disagreement | Distinct ways to disagree |
 | --- | ---: | ---: | ---: |
-| [ASCII bytes](https://useless-husband.github.io/big5-matrix/class.html?id=ascii) | 128 | 3 | 1 |
-| [Bytes 0x80 and 0xFF](https://useless-husband.github.io/big5-matrix/class.html?id=byte-80-ff) | 514 | 514 | 6 |
-| [A lead byte at the end of the input](https://useless-husband.github.io/big5-matrix/class.html?id=lone-lead) | 126 | 126 | 3 |
-| [A lead byte followed by an ASCII byte](https://useless-husband.github.io/big5-matrix/class.html?id=ascii-after-lead) | 16,128 | 10,649 | 17 |
-| [A lead byte followed by a non-ASCII byte that is not a trail byte](https://useless-husband.github.io/big5-matrix/class.html?id=bad-trail) | 4,284 | 4,284 | 16 |
-| [0x8140-0xA0FE](https://useless-husband.github.io/big5-matrix/class.html?id=eudc-8140) | 5,024 | 5,024 | 29 |
-| [0xA140-0xA3BF](https://useless-husband.github.io/big5-matrix/class.html?id=symbols) | 408 | 28 | 9 |
-| [0xA3C0-0xA3FE](https://useless-husband.github.io/big5-matrix/class.html?id=a3c0) | 63 | 63 | 4 |
-| [0xA440-0xC67E](https://useless-husband.github.io/big5-matrix/class.html?id=hanzi1) | 5,401 | 1 | 1 |
-| [0xC6A1-0xC8FE](https://useless-husband.github.io/big5-matrix/class.html?id=c6a1) | 408 | 408 | 17 |
-| [0xC940-0xF9D5](https://useless-husband.github.io/big5-matrix/class.html?id=hanzi2) | 7,652 | 0 | 0 |
-| [0xF9D6-0xF9FE](https://useless-husband.github.io/big5-matrix/class.html?id=f9d6) | 41 | 41 | 5 |
-| [0xFA40-0xFEFE](https://useless-husband.github.io/big5-matrix/class.html?id=eudc-fa40) | 785 | 785 | 6 |
+| [ASCII bytes](https://useless-husband.github.io/big5-matrix/docs/class.html?id=ascii) | 128 | 3 | 1 |
+| [Bytes 0x80 and 0xFF](https://useless-husband.github.io/big5-matrix/docs/class.html?id=byte-80-ff) | 514 | 514 | 6 |
+| [A lead byte at the end of the input](https://useless-husband.github.io/big5-matrix/docs/class.html?id=lone-lead) | 126 | 126 | 3 |
+| [A lead byte followed by an ASCII byte](https://useless-husband.github.io/big5-matrix/docs/class.html?id=ascii-after-lead) | 16,128 | 10,649 | 17 |
+| [A lead byte followed by a non-ASCII byte that is not a trail byte](https://useless-husband.github.io/big5-matrix/docs/class.html?id=bad-trail) | 4,284 | 4,284 | 16 |
+| [0x8140-0xA0FE](https://useless-husband.github.io/big5-matrix/docs/class.html?id=eudc-8140) | 5,024 | 5,024 | 29 |
+| [0xA140-0xA3BF](https://useless-husband.github.io/big5-matrix/docs/class.html?id=symbols) | 408 | 28 | 9 |
+| [0xA3C0-0xA3FE](https://useless-husband.github.io/big5-matrix/docs/class.html?id=a3c0) | 63 | 63 | 4 |
+| [0xA440-0xC67E](https://useless-husband.github.io/big5-matrix/docs/class.html?id=hanzi1) | 5,401 | 1 | 1 |
+| [0xC6A1-0xC8FE](https://useless-husband.github.io/big5-matrix/docs/class.html?id=c6a1) | 408 | 408 | 17 |
+| [0xC940-0xF9D5](https://useless-husband.github.io/big5-matrix/docs/class.html?id=hanzi2) | 7,652 | 0 | 0 |
+| [0xF9D6-0xF9FE](https://useless-husband.github.io/big5-matrix/docs/class.html?id=f9d6) | 41 | 41 | 5 |
+| [0xFA40-0xFEFE](https://useless-husband.github.io/big5-matrix/docs/class.html?id=eudc-fa40) | 785 | 785 | 6 |
 <!--/t-->
 
 Pairs whose first byte is ASCII are left out: in all <!--n:decode.ascii_first_decoders-->43<!--/n--> whole-space decoder columns,
