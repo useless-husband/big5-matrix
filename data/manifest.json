@@ -10,6 +10,21 @@
   }
  },
  "impls": {
+  "browser.chromium": {
+   "label": "Chromium TextDecoder('big5')",
+   "runtime": "browser",
+   "codec": "chromium",
+   "kind": "run",
+   "error_model": "replace",
+   "ops": "d",
+   "note": "Headless Chromium through playwright-core; skipped when no Playwright Chromium is installed.",
+   "version": "Chromium 153.0.8010.12 (headless, Playwright)",
+   "key": "chromium-153.0.8010.12",
+   "decode": {
+    "cases": 65792,
+    "sha256": "3f62d3690af25c719fc1de06a0f40bff1a53e73e20c8a6d71aa041ac414f5710"
+   }
+  },
   "dotnet.950": {
    "label": ".NET code page 950 (strict)",
    "runtime": "dotnet",
