@@ -97,6 +97,28 @@ class DriftTest(unittest.TestCase):
         self.assertEqual(bad[0].examples[0], ("A145", "2027", "2022"))
         self.assertEqual(drift.report(outcomes, skipped, log=lambda s: None), 1)
 
+    def test_a_failing_adapter_fails_with_the_same_version(self):
+        from unittest import mock
+
+        from big5matrix import run
+
+        with mock.patch.object(run, "run_adapter", side_effect=run.AdapterError("boom")):
+            outcomes, skipped = drift.run_check(["python.big5"], base=self.tmp, log=lambda s: None)
+        self.assertEqual({o.status for o in outcomes}, {"broken"})
+        self.assertEqual(drift.report(outcomes, skipped, log=lambda s: None), 1)
+
+    def test_a_failing_adapter_with_another_version_is_reported(self):
+        from unittest import mock
+
+        from big5matrix import run
+
+        self.manifest["impls"]["python.big5"]["key"] = "0.0.1"
+        (self.tmp / "manifest.json").write_text(json.dumps(self.manifest))
+        with mock.patch.object(run, "run_adapter", side_effect=run.AdapterError("no such codec")):
+            outcomes, skipped = drift.run_check(["python.big5"], base=self.tmp, log=lambda s: None)
+        self.assertEqual({o.status for o in outcomes}, {"drift"})
+        self.assertEqual(drift.report(outcomes, skipped, log=lambda s: None), 0)
+
     def test_a_version_bump_is_reported_not_failed(self):
         self._tamper()
         self.manifest["impls"]["python.big5"]["key"] = "0.0.1"

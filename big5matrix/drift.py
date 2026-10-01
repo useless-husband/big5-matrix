@@ -27,7 +27,7 @@ from .run import Runner
 class Outcome:
     impl: str
     op: str
-    status: str  # "same", "drift" (key changed), "changed" (same key, different results)
+    status: str  # "same"; "drift" (key changed); "changed" (same key, other results); "broken" (adapter failed)
     old_key: str
     new_key: str
     differing: int = 0
@@ -56,11 +56,19 @@ def run_check(only: list[str] | None = None, base: Path = store.DATA, log=print)
         for op in ("d", "e"):
             args = store.case_args(op, base)
             todo = [i for i in ok if op in i.ops]
-            entries = runner.run_op(todo, op, args)
+            entries = runner.run_op(todo, op, args, tolerate=True)
             for impl in todo:
                 committed = manifest["impls"][impl.id]
-                new_key = entries[impl.id]["ver"]["key"]
                 old_key = committed["key"]
+                if "error" in entries[impl.id]:
+                    # The adapter failed here. Same version: something is broken; another version
+                    # (an older Ruby without a codec, say): report it.
+                    new_key = (entries[impl.id]["ver"] or {}).get("key") or _key_here(runner, impl)
+                    status = "broken" if new_key == old_key else "drift"
+                    outcomes.append(Outcome(impl.id, op, status, old_key, new_key,
+                                            examples=[("adapter failed", "", entries[impl.id]["error"])]))
+                    continue
+                new_key = entries[impl.id]["ver"]["key"]
                 new_sha = entries[impl.id][store.OPS[op]]["sha256"]
                 old_sha = committed[store.OPS[op]]["sha256"]
                 if new_sha == old_sha:
@@ -70,6 +78,13 @@ def run_check(only: list[str] | None = None, base: Path = store.DATA, log=print)
                 status = "changed" if new_key == old_key else "drift"
                 outcomes.append(Outcome(impl.id, op, status, old_key, new_key, n, ex))
     return outcomes, skipped
+
+
+def _key_here(runner: Runner, impl) -> str:
+    try:
+        return runner.version(impl)["key"]
+    except Exception:  # noqa: BLE001 - the version is only used in the message
+        return "unknown"
 
 
 def report(outcomes: list[Outcome], skipped: dict, log=print) -> int:
@@ -83,11 +98,21 @@ def report(outcomes: list[Outcome], skipped: dict, log=print) -> int:
             note = "identical" + ("" if o.old_key == o.new_key else " (newer version, same results)")
             log(f"OK    {o.impl} {what}: {note}")
         elif o.status == "drift":
-            msg = (f"{o.impl} {what}: {o.differing} cases differ; version key {o.old_key} -> {o.new_key}, "
-                   f"so this is reported, not failed. Examples (case, committed, here): {o.examples[:3]}")
+            if o.examples and o.examples[0][0] == "adapter failed":
+                msg = (f"{o.impl} {what}: the adapter failed with version {o.new_key} (committed: {o.old_key}), "
+                       f"reported, not failed: {o.examples[0][2]}")
+            else:
+                msg = (f"{o.impl} {what}: {o.differing} cases differ; version key {o.old_key} -> {o.new_key}, "
+                       f"so this is reported, not failed. Examples (case, committed, here): {o.examples[:3]}")
             log(f"DRIFT {msg}")
             if gha:
                 print(f"::notice title=Big5 behaviour drift::{msg}")
+        elif o.status == "broken":
+            failed += 1
+            msg = f"{o.impl} {what}: the adapter failed with the committed version {o.old_key}: {o.examples}"
+            log(f"FAIL  {msg}")
+            if gha:
+                print(f"::error title=Adapter failed::{msg}")
         else:
             failed += 1
             msg = (f"{o.impl} {what}: {o.differing} cases differ although the version key {o.old_key} is "

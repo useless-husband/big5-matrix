@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The versions that decide the committed data are pinned, so the drift check compares
+      # them exactly: CPython 3.13.0, x/text and encoding_rs (go.mod, Cargo.lock), Node 25.5.0
+      # and iconv-lite (package-lock.json), Java 27. Everything else may be newer on the runner;
+      # its differences are reported, not failed.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13.0"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache-dependency-path: adapters/go/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "25.5.0"
+      - uses: actions/setup-java@v4
+        continue-on-error: true
+        with:
+          distribution: oracle
+          java-version: "27"
+      - uses: actions/setup-dotnet@v4
+        continue-on-error: true
+        with:
+          dotnet-version: "10.0.x"
+      - name: ICU (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: brew list icu4c >/dev/null 2>&1 || brew install icu4c
+      - name: ICU (Linux)
+        if: runner.os == 'Linux'
+        continue-on-error: true
+        run: sudo apt-get install -y --no-install-recommends libicu-dev pkg-config
+
+      - name: Runtimes available on this runner
+        run: python -m big5matrix build
+
+      - name: Unit and integration tests
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Drift check against the committed data
+        run: python -m big5matrix check
+
+      - name: Documents match the data
+        if: runner.os == 'macOS'
+        run: |
+          python -m big5matrix analyze
+          python -m big5matrix report
+          git diff --exit-code -- report docs README.md README.zh-TW.md
+
+      - name: Lint
+        run: make lint PY=python

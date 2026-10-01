@@ -124,11 +124,20 @@ class Runner:
                 skipped[impl.id] = str(e)
         return ok, skipped
 
-    def run_op(self, impls: list[Impl], op: str, args: list[str]) -> dict[str, dict]:
-        """Run op for every impl (a few at a time) and write the result files."""
+    def run_op(self, impls: list[Impl], op: str, args: list[str], tolerate: bool = False) -> dict[str, dict]:
+        """Run op for every impl (a few at a time) and write the result files. With tolerate, an
+        adapter that fails is recorded as {"error": message} instead of stopping everything."""
         entries: dict[str, dict] = {}
 
         def one(impl: Impl):
+            try:
+                return attempt(impl)
+            except (AdapterError, protocol.ProtocolError, Unavailable, OSError, subprocess.SubprocessError) as e:
+                if not tolerate:
+                    raise
+                return impl.id, None, {"error": str(e)[-300:]}
+
+        def attempt(impl: Impl):
             t0 = time.monotonic()
             ver = self.version(impl)
             res = self.results(impl, op, args)
@@ -141,6 +150,8 @@ class Runner:
         with ThreadPoolExecutor(max_workers=self.workers) as pool:
             for impl_id, ver, entry in pool.map(one, todo):
                 entries[impl_id] = {"ver": ver, store.OPS[op]: entry}
+                if "error" in entry:
+                    entries[impl_id]["error"] = entry["error"]
         return entries
 
 
