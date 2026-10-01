@@ -1,0 +1,11 @@
+# build output of the adapters
+/build/
+adapters/node/node_modules/
+adapters/rust/target/
+adapters/dotnet/bin/
+adapters/dotnet/obj/
+__pycache__/
+*.pyc
+.DS_Store
+# screenshots and scratch output of tools/
+/tmp/
