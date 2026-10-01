@@ -1,0 +1,10 @@
+[package]
+name = "big5-matrix-rust-adapter"
+version = "0.1.0"
+edition = "2024"
+description = "big5-matrix adapter for the encoding_rs crate"
+license = "MIT"
+publish = false
+
+[dependencies]
+encoding_rs = "0.8.42"

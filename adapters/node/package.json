@@ -1,0 +1,9 @@
+{
+  "name": "big5-matrix-node-adapter",
+  "private": true,
+  "description": "big5-matrix adapter for Node.js TextDecoder and iconv-lite",
+  "license": "MIT",
+  "dependencies": {
+    "iconv-lite": "0.7.3"
+  }
+}
