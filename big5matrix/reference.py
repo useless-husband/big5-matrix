@@ -329,7 +329,10 @@ def run_reference(ref_id: str, op: str, args: list[str]) -> dict[str, str]:
             if isinstance(model, Table) and not model.in_scope(data):
                 continue
             toks = model.decode(data)
-            out[arg] = " ".join(t if t == ERROR else f"{t:04X}" for t in toks) or EMPTY
+            # The WHATWG decoder has a replacement mode, so like the adapters it writes U+FFFD for
+            # an error; a table stops at its first gap, written as "!" (see protocol.py).
+            err = "FFFD" if isinstance(model, Whatwg) else ERROR
+            out[arg] = " ".join(err if t == ERROR else f"{t:04X}" for t in toks) or EMPTY
         else:
             cps = tuple(int(x, 16) for x in arg.split())
             b = model.encode(cps)
