@@ -12,8 +12,10 @@ and writes exactly one response line per request, in the same order:
 
 Decode result: the decoded text as space-separated code points (uppercase hex, at least four
 digits), produced in the implementation's replacement mode, so an error shows up as FFFD
-followed by whatever the implementation does next. An implementation that has no replacement
-mode (it can only stop) writes ``!`` where it stopped. ``-`` means the output was empty.
+followed by whatever the implementation does next. An implementation that substitutes something
+other than U+FFFD for an error, and lets the adapter tell, writes ``!XXXX`` for that substitute
+(ICU's IBM converters write U+001A, for example). An implementation that has no replacement mode
+(it can only stop) writes ``!`` where it stopped. ``-`` means the output was empty.
 
 Encode result: the bytes in uppercase hex, ``!`` if the implementation reported the input as
 not encodable, ``-`` if the output was empty.
@@ -90,6 +92,8 @@ def validate_result(op: str, result: str) -> None:
             if i != len(toks) - 1:
                 raise ProtocolError(f"'!' must end a decode result: {result!r}")
             continue
+        if t.startswith(ERROR):
+            t = t[1:]
         if not _is_hex(t, 4) or len(t) > 6 or int(t, 16) > 0x10FFFF:
             raise ProtocolError(f"bad code point {t!r} in {result!r}")
 
@@ -121,11 +125,12 @@ def decode_tokens(result: str) -> list[str]:
 
     U+FFFD is the replacement character every replacement-mode implementation emits, so it is
     read as an error. (No implementation or table in this study maps a valid sequence to
-    U+FFFD on purpose; BIG5.TXT uses it to mean "unmapped", which is also an error.)
+    U+FFFD on purpose; BIG5.TXT uses it to mean "unmapped", which is also an error.) A marked
+    substitute ``!XXXX`` is an error too.
     """
     if result == EMPTY:
         return []
-    return [ERROR if t == REPLACEMENT else t for t in result.split(" ")]
+    return [ERROR if t == REPLACEMENT or t.startswith(ERROR) else t for t in result.split(" ")]
 
 
 def is_clean_decode(result: str) -> bool:

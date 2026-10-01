@@ -3,9 +3,12 @@
  * big5matrix/protocol.py.
  *
  * Converters are used with ICU's default settings, which are also uconv's: on decoding the
- * substitute callback (U+FFFD, or U+001A where ICU chooses it), and no "fallback" mappings
- * except those ICU always applies. On encoding the stop callback reports an unmappable
- * character instead of writing the substitution byte.
+ * substitute callback, and no "fallback" mappings except those ICU always applies. ICU's
+ * substitute is U+FFFD or, for some converters and errors, U+001A; to tell a U+001A written
+ * for an error from a real U+001A, decoding goes through a callback that calls ICU's own
+ * substitute callback and notes what it wrote, and the adapter prints such a substitute as
+ * "!001A". On encoding the stop callback reports an unmappable character instead of writing
+ * the substitution byte.
  *
  * Build: cc -O2 adapter.c $(pkg-config --cflags --libs icu-uc) -o icu-adapter
  */
@@ -14,9 +17,38 @@
 #include <string.h>
 
 #include <unicode/ucnv.h>
+#include <unicode/ucnv_err.h>
 #include <unicode/uclean.h>
 #include <unicode/uversion.h>
 #include <unicode/utf16.h>
+
+#define UCAP 1024
+
+/* Output positions [start, end) that ICU's substitute callback wrote during one conversion. */
+typedef struct {
+    const UChar *base;
+    int n;
+    int32_t start[64], end[64];
+} SubMarks;
+
+static void U_CALLCONV mark_substitute(const void *context, UConverterToUnicodeArgs *args,
+                                       const char *codeUnits, int32_t length,
+                                       UConverterCallbackReason reason, UErrorCode *err) {
+    SubMarks *m = (SubMarks *)context;
+    const UChar *before = args->target;
+    UCNV_TO_U_CALLBACK_SUBSTITUTE(NULL, args, codeUnits, length, reason, err);
+    if (reason <= UCNV_IRREGULAR && m->n < 64) {
+        m->start[m->n] = (int32_t)(before - m->base);
+        m->end[m->n] = (int32_t)(args->target - m->base);
+        m->n++;
+    }
+}
+
+static int substituted(const SubMarks *m, int32_t pos) {
+    for (int i = 0; i < m->n; i++)
+        if (pos >= m->start[i] && pos < m->end[i]) return 1;
+    return 0;
+}
 
 static void die(const char *msg, UErrorCode err) {
     fprintf(stderr, "icu adapter: %s: %s\n", msg, u_errorName(err));
@@ -51,12 +83,17 @@ int main(int argc, char **argv) {
         fprintf(stderr, "icu adapter: %s is an ambiguous alias; use a converter name\n", argv[1]);
         return 2;
     }
+    static UChar ubuf[UCAP];
+    static SubMarks marks;
+    marks.base = ubuf;
+    err = U_ZERO_ERROR;
+    ucnv_setToUCallBack(cnv, mark_substitute, &marks, NULL, NULL, &err);
+    if (U_FAILURE(err)) die("ucnv_setToUCallBack", err);
     err = U_ZERO_ERROR;
     ucnv_setFromUCallBack(cnv, UCNV_FROM_U_CALLBACK_STOP, NULL, NULL, NULL, &err);
     if (U_FAILURE(err)) die("ucnv_setFromUCallBack", err);
 
     static char line[4096];
-    static UChar ubuf[1024];
     static char bbuf[1024];
     static uint8_t bytes[1024];
     while (fgets(line, sizeof line, stdin)) {
@@ -71,16 +108,22 @@ int main(int argc, char **argv) {
             size_t len = strlen(arg) / 2;
             for (size_t i = 0; i < len; i++) bytes[i] = (uint8_t)(hexval(arg[2 * i]) << 4 | hexval(arg[2 * i + 1]));
             ucnv_reset(cnv);
+            marks.n = 0;
             err = U_ZERO_ERROR;
-            /* ucnv_toUChars converts the whole input and flushes the converter. */
-            int32_t ulen = ucnv_toUChars(cnv, ubuf, 1024, (const char *)bytes, (int32_t)len, &err);
-            if (U_FAILURE(err)) die("ucnv_toUChars", err);
+            UChar *target = ubuf;
+            const char *source = (const char *)bytes;
+            /* One call with flush=TRUE converts the whole input and ends it, like ucnv_toUChars. */
+            ucnv_toUnicode(cnv, &target, ubuf + UCAP, &source, source + len, NULL, 1, &err);
+            if (U_FAILURE(err)) die("ucnv_toUnicode", err);
+            int32_t ulen = (int32_t)(target - ubuf);
             if (ulen == 0) printf("-");
             for (int32_t i = 0; i < ulen;) {
                 UChar32 c;
-                int first = i == 0;
+                int32_t at = i;
                 U16_NEXT(ubuf, i, ulen, c);
-                printf(first ? "%04X" : " %04X", (unsigned)c);
+                if (at > 0) printf(" ");
+                if (substituted(&marks, at) && c != 0xFFFD) printf("!%04X", (unsigned)c);
+                else printf("%04X", (unsigned)c);
             }
         } else if (strcmp(op, "e") == 0) {
             int32_t ulen = 0;
