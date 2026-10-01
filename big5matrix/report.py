@@ -14,10 +14,11 @@ from pathlib import Path
 from .registry import ROOT
 
 SUMMARY = ROOT / "report" / "summary.json"
-DOCUMENTS = [ROOT / "report" / "REPORT.md", ROOT / "README.md", ROOT / "README.zh-TW.md"]
+DOCUMENTS = [ROOT / "docs" / "divergences.md", ROOT / "README.md", ROOT / "README.zh-TW.md"]
 
-NUM = re.compile(r"<!--n:([^>]+?)-->(.*?)<!--/n-->", re.S)
-TAB = re.compile(r"<!--t:([^>]+?)-->\n?(.*?)<!--/t-->", re.S)
+# A key never spans lines or contains '<' or '>'; a number never spans lines or contains '<'.
+NUM = re.compile(r"<!--n:([^<>\n]+?)-->([^<\n]*)<!--/n-->")
+TAB = re.compile(r"<!--t:([^<>\n]+?)-->\n?(.*?)<!--/t-->", re.S)
 
 
 class UnknownKey(KeyError):

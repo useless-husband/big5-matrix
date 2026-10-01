@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Big5 0x8862 in this browser</title>
+<pre id="out"></pre>
+<script>
+// WHATWG Encoding Standard, Big5 decoder: pointer 1133 (bytes 88 62) decodes to U+00CA U+0304.
+const show = (s) => Array.from({length: s.length}, (_, i) => 'U+' + s.charCodeAt(i).toString(16).toUpperCase().padStart(4, '0')).join(' ');
+const lines = [];
+for (const hex of ['8862', '8864', '88A3', '88A5']) {
+  const bytes = Uint8Array.from(hex.match(/../g).map((x) => parseInt(x, 16)));
+  lines.push(`${hex}: ${show(new TextDecoder('big5').decode(bytes))}`);
+}
+lines.push('expected: U+00CA U+0304, U+00CA U+030C, U+00EA U+0304, U+00EA U+030C');
+document.getElementById('out').textContent = lines.join('\n');
+</script>
