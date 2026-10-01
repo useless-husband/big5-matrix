@@ -9,3 +9,4 @@ __pycache__/
 .DS_Store
 # screenshots and scratch output of tools/
 /tmp/
+adapters/browser/node_modules/

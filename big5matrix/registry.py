@@ -43,6 +43,8 @@ def _impls() -> list[Impl]:
     add("node", "iconv-lite:big5", "Node.js iconv-lite big5", slug="iconv-lite-big5")
     add("node", "iconv-lite:cp950", "Node.js iconv-lite cp950", slug="iconv-lite-cp950")
     add("rust", "big5", "Rust encoding_rs BIG5")
+    add("browser", "chromium", "Chromium TextDecoder('big5')", ops="d",
+        note="Headless Chromium through playwright-core; skipped when no Playwright Chromium is installed.")
     for c in ("Big5", "x-windows-950", "x-IBM950", "x-Big5-Solaris", "Big5-HKSCS",
               "x-Big5-HKSCS-2001", "x-MS950-HKSCS", "x-MS950-HKSCS-XP"):
         add("java", c, f"Java {c}")
@@ -176,6 +178,22 @@ def prepare(runtime: str) -> list[str]:
                 raise Unavailable("npm not found")
             _run([npm, "ci", "--no-audit", "--no-fund"], cwd=a / "node")
         return [node, str(a / "node" / "adapter.mjs")]
+    if runtime == "browser":
+        node, npm = _which("node"), _which("npm")
+        if not node:
+            raise Unavailable("node not found")
+        d = a / "browser"
+        if not (d / "node_modules" / "playwright-core").exists():
+            if not npm:
+                raise Unavailable("npm not found")
+            _run([npm, "ci", "--no-audit", "--no-fund"], cwd=d)
+        cmd = [node, str(d / "adapter.mjs")]
+        try:
+            _run(cmd + ["--version"])
+        except Unavailable as e:
+            raise Unavailable("no Chromium for Playwright 1.63 (npx playwright@1.63.0 install "
+                              f"chromium): {e}") from e
+        return cmd
     if runtime == "rust":
         cargo = _cargo()
         env = dict(os.environ)

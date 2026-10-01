@@ -1,0 +1,9 @@
+{
+  "name": "big5-matrix-browser-adapter",
+  "private": true,
+  "description": "big5-matrix adapter for a browser's TextDecoder (Chromium through Playwright)",
+  "license": "MIT",
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}
