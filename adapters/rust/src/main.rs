@@ -2,7 +2,7 @@
 
 use std::io::{self, BufRead, BufWriter, Write};
 
-use encoding_rs::{EncoderResult, BIG5};
+use encoding_rs::{BIG5, EncoderResult};
 
 fn code_points(s: &str) -> String {
     if s.is_empty() {

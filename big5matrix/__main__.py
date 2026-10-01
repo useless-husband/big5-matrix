@@ -9,6 +9,7 @@
   site             build the static site data under docs/
   all              run + analyze + report + site
   list             list the implementations
+  build            build every adapter whose runtime is installed and print its version
   show INPUT       what every implementation does with a byte sequence (hex, e.g. A145)
                    or a character (U+2027, or the character itself)
   dump IMPL OP     print one result file with its inputs (OP is decode or encode)
@@ -29,6 +30,18 @@ def main(argv: list[str]) -> int:
 
         for i in IMPLS:
             print(f"{i.id:28s} {i.kind:5s} {i.ops:2s} {i.error_model:7s} {i.label}")
+        return 0
+    if cmd == "build":
+        from .registry import IMPLS, Unavailable, prepare
+        from .run import adapter_version
+
+        for runtime in dict.fromkeys(i.runtime for i in IMPLS if i.kind == "run"):
+            codec = next(i.codec for i in IMPLS if i.runtime == runtime)
+            try:
+                cmd_ = prepare(runtime)
+                print(f"{runtime:8s} {adapter_version(cmd_, codec)['version']}")
+            except Unavailable as e:
+                print(f"{runtime:8s} SKIPPED: {e}")
         return 0
     if cmd == "show":
         from .show import show

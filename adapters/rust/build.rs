@@ -11,13 +11,19 @@ fn main() {
         if line == "name = \"encoding_rs\"" {
             in_pkg = true;
         } else if in_pkg && line.starts_with("version = ") {
-            version = line.trim_start_matches("version = ").trim_matches('"').to_string();
+            version = line
+                .trim_start_matches("version = ")
+                .trim_matches('"')
+                .to_string();
             break;
         }
     }
     println!("cargo:rustc-env=ENCODING_RS_VERSION={}", version);
     let rustc = std::env::var("RUSTC").unwrap_or_else(|_| "rustc".into());
-    let out = Command::new(rustc).arg("--version").output().expect("rustc --version");
+    let out = Command::new(rustc)
+        .arg("--version")
+        .output()
+        .expect("rustc --version");
     let v = String::from_utf8_lossy(&out.stdout);
     let v = v.split_whitespace().nth(1).unwrap_or("unknown");
     println!("cargo:rustc-env=RUSTC_VERSION={}", v);
